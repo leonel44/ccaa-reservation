@@ -113,6 +113,9 @@ export default function Layout({ children, role }) {
       </header>
 
       <div className="app-corps">
+        {menuMobileOuvert && (
+          <div className="fond-menu-mobile" onClick={() => setMenuMobileOuvert(false)} />
+        )}
         <nav className={`barre-laterale ${menuMobileOuvert ? 'barre-laterale-ouverte' : ''}`}>
           {liens.map((lien) => (
             <NavLink

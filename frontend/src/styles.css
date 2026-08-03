@@ -305,6 +305,12 @@ table.table-donnees tr:last-child td { border-bottom: none; }
 
 @media (max-width: 768px) {
   .bouton-menu-mobile { display: block; }
+  .fond-menu-mobile {
+    position: fixed; inset: 53px 0 0 0;
+    background: rgba(15, 23, 42, 0.35);
+    z-index: 24;
+    animation: apparition 0.15s ease;
+  }
   .entete-titre { font-size: 13px; }
 
   .barre-laterale {
@@ -336,11 +342,17 @@ table.table-donnees tr:last-child td { border-bottom: none; }
 
   .calendrier-grille { grid-template-columns: 50px repeat(7, minmax(72px, 1fr)); }
 }
-
 @media (max-width: 480px) {
-  .grille-stats { grid-template-columns: 1fr 1fr; }
+  .grille-stats { grid-template-columns: 1fr; }
   .carte-connexion, .carte-formulaire { padding: 24px 18px; }
   .panneau { padding: 14px; }
+  .calendrier-grille { grid-template-columns: 42px repeat(7, minmax(58px, 1fr)); }
+  .actions-formulaire { flex-direction: column; }
+  .bandeau-bienvenue { flex-direction: column; align-items: flex-start; }
+  .bandeau-bienvenue-horloge { text-align: left; }
+  .accueil-titre { font-size: 24px; }
+  .grille-cartes-accueil { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .lien-rapide { min-width: 100%; }
 }
 
 /* ---------- Toasts ---------- */
