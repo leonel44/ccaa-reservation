@@ -70,3 +70,4 @@ un arbitrage manuel par un administrateur.
 - Salle favorite (page Profil) — un raccourci de réservation rapide apparaît sur l'accueil.
 - Jours bloqués par l'administrateur (fériés, maintenance) — aucune réservation possible
   sur ces dates. Gestion dans `/admin/jours-bloques`.
+"# ccaa-reservation"  
