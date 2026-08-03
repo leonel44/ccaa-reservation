@@ -26,9 +26,15 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 
 const PORT = process.env.PORT || 4000;
 
+// TiDB n'autorise pas de modifier plusieurs contraintes de schéma (ex: clé
+// unique) en une seule commande ALTER TABLE, contrairement à MySQL classique.
+// On désactive donc `alter` pour TiDB — la création initiale des tables
+// (CREATE TABLE) n'est pas concernée par cette limitation.
+const estTiDB = (process.env.DB_HOST || '').includes('tidbcloud.com');
+
 async function demarrer() {
   await sequelize.authenticate();
-  await sequelize.sync({ alter: true });
+  await sequelize.sync(estTiDB ? {} : { alter: true });
   await initialiser();
   noShowJob.demarrer();
   rappelJob.demarrer();
