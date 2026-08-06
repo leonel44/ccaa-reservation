@@ -57,7 +57,7 @@ async function creerAvecArbitrage({
         message: `Ta réservation du ${new Date(ancienne.dateDebut).toLocaleString('fr-FR')} a été annulée par une demande plus prioritaire.`,
       });
     }
-    const reservation = await Reservation.create({ ...donneesBase, statut: 'EnAttente' });
+    const reservation = await Reservation.create({ ...donneesBase, statut: statutInitial });
     return { reservation };
   }
 

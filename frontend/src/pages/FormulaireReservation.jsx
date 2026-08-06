@@ -83,7 +83,9 @@ export default function FormulaireReservation() {
       setStatut({ type: 'succes', message: 'Réservation envoyée avec succès.' });
       setTimeout(() => navigate('/mes-reservations'), 1200);
     } catch (err) {
-      setStatut({ type: 'erreur', message: err.message, alternatives: err.donnees?.creneauxAlternatifs || [] });
+      const message = err.donnees?.message || err.message || 'Une erreur est survenue.';
+      const alternatives = err.donnees?.alternatives || err.donnees?.echec?.flatMap((item) => item.alternatives || []) || [];
+      setStatut({ type: 'erreur', message, alternatives });
     }
   }
 

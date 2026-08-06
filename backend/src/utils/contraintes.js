@@ -35,7 +35,6 @@ async function verifierContraintes({ dateDebut, dateFin, utilisateurId, resource
   const chevauchement = await Reservation.findOne({
     where: {
       utilisateurId,
-      resourceId: { [Op.ne]: resourceId },
       statut: { [Op.in]: ['EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin', 'Validee'] },
       dateDebut: { [Op.lt]: fin },
       dateFin: { [Op.gt]: debut },

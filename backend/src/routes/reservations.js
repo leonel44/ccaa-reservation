@@ -43,13 +43,34 @@ router.post('/', async (req, res) => {
   if (!utilisateur?.Service) return res.status(400).json({ message: 'Utilisateur ou service introuvable.' });
 
   const { resourceId, dateDebut, dateFin, motif, nombreParticipants, estRecurrente, regleRecurrence, prioriteForceeParAdmin } = req.body;
-  if (new Date(dateFin) <= new Date(dateDebut)) {
+  const resourceIdNum = Number(resourceId);
+  const participants = Number(nombreParticipants);
+  const debutDate = new Date(dateDebut);
+  const finDate = new Date(dateFin);
+
+  if (!resourceIdNum || Number.isNaN(resourceIdNum)) {
+    return res.status(400).json({ message: 'Ressource invalide.' });
+  }
+
+  if (!motif || motif.toString().trim().length === 0) {
+    return res.status(400).json({ message: 'Le motif est requis.' });
+  }
+
+  if (Number.isNaN(participants) || participants < 1) {
+    return res.status(400).json({ message: 'Le nombre de participants doit être un nombre positif.' });
+  }
+
+  if (Number.isNaN(debutDate.getTime()) || Number.isNaN(finDate.getTime())) {
+    return res.status(400).json({ message: 'Dates invalides.' });
+  }
+
+  if (finDate <= debutDate) {
     return res.status(400).json({ message: 'La date de fin doit être postérieure à la date de début.' });
   }
 
-  const ressource = await Resource.findByPk(resourceId);
+  const ressource = await Resource.findByPk(resourceIdNum);
   if (!ressource) return res.status(400).json({ message: 'Ressource introuvable.' });
-  if (ressource?.capacite > 0 && nombreParticipants > ressource.capacite) {
+  if (ressource?.capacite > 0 && participants > ressource.capacite) {
     return res.status(400).json({ message: `Cette salle ne peut accueillir que ${ressource.capacite} personnes.` });
   }
 
@@ -65,7 +86,7 @@ router.post('/', async (req, res) => {
   const responsableDuService = await User.findOne({ where: { serviceId: utilisateur.serviceId, role: 'Responsable' } });
   let statutInitial = 'EnAttente';
   if (req.utilisateur.role === 'Administrateur') {
-    statutInitial = ressource.necessiteValidationAdmin ? 'EnAttenteAdmin' : 'EnAttente';
+    statutInitial = ressource.necessiteValidationAdmin ? 'EnAttenteAdmin' : 'Validee';
   } else if (req.utilisateur.role === 'Responsable') {
     statutInitial = ressource.necessiteValidationAdmin ? 'EnAttenteAdmin' : 'Validee';
   } else if (responsableDuService) {
@@ -125,7 +146,7 @@ router.post('/', async (req, res) => {
     });
   }
 
-  const complete = await Reservation.findByPk(creations[0].id, { include: [Resource, User] });
+  const complete = await Reservation.findByPk(creations[0].id, { include: [Resource, { model: User, include: Service }] });
 
   const email = utilisateur.email;
   const mailResult = await envoyerMailConfirmation({
@@ -137,8 +158,8 @@ router.post('/', async (req, res) => {
 
   res.json({
     reservation: versDto(complete),
-    besoinArbitrageAdmin: creations.some((r) => r.statut === 'EnAttente') && creations.length > 0,
-    raison: 'Réservations récurrentes créées.',
+    besoinArbitrageAdmin: creations.some((r) => ['EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'].includes(r.statut)) && creations.length > 0,
+    raison: creations.length > 1 ? 'Réservations récurrentes créées.' : 'Réservation créée.',
     occurrencesCreees: creations.length,
     occurrencesRatees: echec.length,
     emailEnvoye: mailResult.envoye,
