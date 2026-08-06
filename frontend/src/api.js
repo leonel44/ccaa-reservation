@@ -212,6 +212,8 @@ export const api = {
 
   // --- Support ---
   envoyerMessageSupport: async (donnees) => requete('/support', { method: 'POST', body: JSON.stringify(donnees) }),
+  getSupportMessages: () => requete('/support'),
+  resoudreSupportMessage: async (id, resolution) => requete(`/support/${id}/resolve`, { method: 'PATCH', body: JSON.stringify({ resolution }) }),
 
   // --- Liste d'attente ---
   getMaListeAttente: () => requete('/waitlist/mine'),

@@ -50,6 +50,14 @@ const Notification = sequelize.define('Notification', {
   lue: { type: DataTypes.BOOLEAN, defaultValue: false },
 }, { tableName: 'notifications' });
 
+const SupportMessage = sequelize.define('SupportMessage', {
+  sujet: { type: DataTypes.STRING, allowNull: false },
+  message: { type: DataTypes.TEXT, allowNull: false },
+  statut: { type: DataTypes.ENUM('Ouvert', 'Resolu'), defaultValue: 'Ouvert' },
+  resolution: { type: DataTypes.TEXT, allowNull: true },
+  resoluLe: { type: DataTypes.DATE, allowNull: true },
+}, { tableName: 'support_messages' });
+
 const JournalAction = sequelize.define('JournalAction', {
   action: { type: DataTypes.STRING, allowNull: false },
   details: { type: DataTypes.STRING, allowNull: false },
@@ -81,9 +89,13 @@ Reservation.belongsTo(User, { foreignKey: 'utilisateurId' });
 User.hasMany(Notification, { foreignKey: 'utilisateurId' });
 Notification.belongsTo(User, { foreignKey: 'utilisateurId' });
 
+User.hasMany(SupportMessage, { foreignKey: 'utilisateurId' });
+SupportMessage.belongsTo(User, { foreignKey: 'utilisateurId' });
+SupportMessage.belongsTo(User, { as: 'resoluPar', foreignKey: 'resoluParId' });
+
 Resource.hasMany(ListeAttente, { foreignKey: 'resourceId' });
 ListeAttente.belongsTo(Resource, { foreignKey: 'resourceId' });
 User.hasMany(ListeAttente, { foreignKey: 'utilisateurId' });
 ListeAttente.belongsTo(User, { foreignKey: 'utilisateurId' });
 
-module.exports = { sequelize, Service, User, Resource, Reservation, Notification, JournalAction, ListeAttente, JourFerie };
+module.exports = { sequelize, Service, User, Resource, Reservation, Notification, JournalAction, ListeAttente, JourFerie, SupportMessage };

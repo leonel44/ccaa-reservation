@@ -17,6 +17,7 @@ const AdminServices = lazy(() => import('./pages/AdminServices.jsx'));
 const AdminUtilisateurs = lazy(() => import('./pages/AdminUtilisateurs.jsx'));
 const AdminJoursFeries = lazy(() => import('./pages/AdminJoursFeries.jsx'));
 const AdminJournal = lazy(() => import('./pages/AdminJournal.jsx'));
+const AdminSupport = lazy(() => import('./pages/AdminSupport.jsx'));
 const Support = lazy(() => import('./pages/Support.jsx'));
 
 function RouteProtegee({ children, adminSeulement = false }) {
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="/support" element={<RouteProtegee><Support /></RouteProtegee>} />
 
         <Route path="/admin" element={<RouteProtegee adminSeulement><DashboardAdmin /></RouteProtegee>} />
+        <Route path="/admin/support" element={<RouteProtegee adminSeulement><AdminSupport /></RouteProtegee>} />
         <Route path="/admin/ressources" element={<RouteProtegee adminSeulement><AdminRessources /></RouteProtegee>} />
         <Route path="/admin/services" element={<RouteProtegee adminSeulement><AdminServices /></RouteProtegee>} />
         <Route path="/admin/utilisateurs" element={<RouteProtegee adminSeulement><AdminUtilisateurs /></RouteProtegee>} />
