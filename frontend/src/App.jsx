@@ -17,6 +17,7 @@ const AdminServices = lazy(() => import('./pages/AdminServices.jsx'));
 const AdminUtilisateurs = lazy(() => import('./pages/AdminUtilisateurs.jsx'));
 const AdminJoursFeries = lazy(() => import('./pages/AdminJoursFeries.jsx'));
 const AdminJournal = lazy(() => import('./pages/AdminJournal.jsx'));
+const Support = lazy(() => import('./pages/Support.jsx'));
 
 function RouteProtegee({ children, adminSeulement = false }) {
   if (!api.estConnecte()) return <Navigate to="/connexion" replace />;
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/calendrier" element={<RouteProtegee><Calendrier /></RouteProtegee>} />
         <Route path="/reserver" element={<RouteProtegee><FormulaireReservation /></RouteProtegee>} />
         <Route path="/mes-reservations" element={<RouteProtegee><MesReservations /></RouteProtegee>} />
+        <Route path="/support" element={<RouteProtegee><Support /></RouteProtegee>} />
 
         <Route path="/admin" element={<RouteProtegee adminSeulement><DashboardAdmin /></RouteProtegee>} />
         <Route path="/admin/ressources" element={<RouteProtegee adminSeulement><AdminRessources /></RouteProtegee>} />

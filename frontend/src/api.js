@@ -210,6 +210,9 @@ export const api = {
   marquerNotificationLue: (id) => requete(`/notifications/${id}/lue`, { method: 'PATCH' }),
   toutMarquerLu: () => requete('/notifications/tout-lire', { method: 'PATCH' }),
 
+  // --- Support ---
+  envoyerMessageSupport: async (donnees) => requete('/support', { method: 'POST', body: JSON.stringify(donnees) }),
+
   // --- Liste d'attente ---
   getMaListeAttente: () => requete('/waitlist/mine'),
   rejoindreListeAttente: (donnees) => requete('/waitlist', { method: 'POST', body: JSON.stringify(donnees) }),

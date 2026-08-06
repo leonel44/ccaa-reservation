@@ -20,6 +20,7 @@ app.use('/api/reservations', require('./src/routes/reservations'));
 app.use('/api/notifications', require('./src/routes/notifications'));
 app.use('/api/dashboard', require('./src/routes/dashboard'));
 app.use('/api/waitlist', require('./src/routes/waitlist'));
+app.use('/api/support', require('./src/routes/support'));
 app.use('/api/jours-feries', require('./src/routes/joursFeries'));
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));

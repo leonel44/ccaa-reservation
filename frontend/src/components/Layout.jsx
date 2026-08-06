@@ -73,6 +73,7 @@ export default function Layout({ children, role }) {
           <span className="entete-titre">CCAA — Réservation de salles</span>
         </div>
         <div className="entete-droite">
+          <button className="bouton-secondaire" onClick={() => navigate('/support')} title="Besoin d’aide urgente">🆘 Urgence</button>
           <button className="bouton-icone" onClick={() => setThemeSombre((v) => !v)} title="Changer de thème">
             {themeSombre ? '☀️' : '🌙'}
           </button>
