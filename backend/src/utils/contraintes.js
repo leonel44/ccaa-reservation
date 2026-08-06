@@ -36,7 +36,7 @@ async function verifierContraintes({ dateDebut, dateFin, utilisateurId, resource
     where: {
       utilisateurId,
       resourceId: { [Op.ne]: resourceId },
-      statut: { [Op.in]: ['EnAttente', 'Validee'] },
+      statut: { [Op.in]: ['EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin', 'Validee'] },
       dateDebut: { [Op.lt]: fin },
       dateFin: { [Op.gt]: debut },
     },

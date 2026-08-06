@@ -15,7 +15,7 @@ router.get('/disponibles', verifierToken, async (req, res) => {
 
   const occupees = await Reservation.findAll({
     where: {
-      statut: { [Op.in]: ['EnAttente', 'Validee'] },
+      statut: { [Op.in]: ['EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin', 'Validee'] },
       dateDebut: { [Op.lt]: jusqua },
       dateFin: { [Op.gt]: depuis },
     },
@@ -26,6 +26,18 @@ router.get('/disponibles', verifierToken, async (req, res) => {
   const where = {
     id: { [Op.notIn]: idsOccupes.length ? idsOccupes : [0] },
     capacite: { [Op.gte]: Number(capaciteMin) },
+    [Op.or]: [
+      { statutMaintenance: 'Disponible' },
+      {
+        statutMaintenance: 'Indisponible',
+        [Op.or]: [
+          { maintenanceDebut: null },
+          { maintenanceFin: null },
+          { maintenanceFin: { [Op.lt]: depuis } },
+          { maintenanceDebut: { [Op.gt]: jusqua } },
+        ],
+      },
+    ],
   };
 
   if (type && type !== 'Tous') {

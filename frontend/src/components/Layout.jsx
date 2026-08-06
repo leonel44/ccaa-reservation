@@ -10,6 +10,10 @@ const LIENS_EMPLOYE = [
   { to: '/reserver', label: 'Réserver', icone: '➕' },
   { to: '/mes-reservations', label: 'Mes réservations', icone: '🗂️' },
 ];
+const LIENS_RESPONSABLE = [
+  ...LIENS_EMPLOYE,
+  { to: '/responsable', label: 'Validation équipe', icone: '✅' },
+];
 
 const LIENS_ADMIN = [
   { to: '/admin', label: 'Tableau de bord', icone: '📊' },
@@ -35,7 +39,7 @@ export default function Layout({ children, role }) {
   const [themeSombre, setThemeSombre] = useState(() => localStorage.getItem('ccaa_theme') === 'sombre');
   const navigate = useNavigate();
 
-  const liens = role === 'Administrateur' ? LIENS_ADMIN : LIENS_EMPLOYE;
+  const liens = role === 'Administrateur' ? LIENS_ADMIN : api.getRole() === 'Responsable' ? LIENS_RESPONSABLE : LIENS_EMPLOYE;
   const nonLues = notifications.filter((n) => !n.lue).length;
   const nomComplet = api.getNomComplet ? api.getNomComplet() : '';
 

@@ -17,6 +17,7 @@ async function initialiser() {
   const motDePasseHash = await bcrypt.hash('Passer123!', 10);
 
   await User.create({ nom: 'Ngono', prenom: 'Admin', email: 'admin@ccaa.cm', motDePasseHash, role: 'Administrateur', serviceId: administration.id });
+  await User.create({ nom: 'Martin', prenom: 'Julie', email: 'responsable@ccaa.cm', motDePasseHash, role: 'Responsable', serviceId: administration.id });
   await User.create({ nom: 'Ekedi', prenom: 'Léonel', email: 'employe@ccaa.cm', motDePasseHash, role: 'Employe', serviceId: administration.id });
 
   console.log('Base initialisée avec les comptes de démonstration.');

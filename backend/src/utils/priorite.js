@@ -7,11 +7,12 @@ const { Reservation, JournalAction, Notification } = require('../models');
 async function creerAvecArbitrage({
   resourceId, utilisateurId, dateDebut, dateFin, motif, nombreParticipants,
   prioriteEffective, prioriteForceeParAdmin, estRecurrente, regleRecurrence,
+  statutInitial = 'EnAttente',
 }) {
   const conflits = await Reservation.findAll({
     where: {
       resourceId,
-      statut: { [Op.in]: ['EnAttente', 'Validee'] },
+      statut: { [Op.in]: ['EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin', 'Validee'] },
       dateDebut: { [Op.lt]: dateFin },
       dateFin: { [Op.gt]: dateDebut },
     },
@@ -23,12 +24,12 @@ async function creerAvecArbitrage({
   };
 
   if (conflits.length === 0) {
-    const reservation = await Reservation.create({ ...donneesBase, statut: 'EnAttente' });
+    const reservation = await Reservation.create({ ...donneesBase, statut: statutInitial });
     return { reservation };
   }
 
   const conflitsValides = conflits.filter((c) => c.statut === 'Validee');
-  const conflitsEnAttente = conflits.filter((c) => c.statut === 'EnAttente');
+  const conflitsEnAttente = conflits.filter((c) => ['EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'].includes(c.statut));
 
   if (conflitsValides.length > 0) {
     const reservation = await Reservation.create({ ...donneesBase, statut: 'EnAttente' });

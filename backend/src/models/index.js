@@ -11,7 +11,7 @@ const User = sequelize.define('User', {
   prenom: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
   motDePasseHash: { type: DataTypes.STRING, allowNull: false },
-  role: { type: DataTypes.ENUM('Employe', 'Administrateur'), defaultValue: 'Employe' },
+  role: { type: DataTypes.ENUM('Employe', 'Responsable', 'Administrateur'), defaultValue: 'Employe' },
   salleFavoriteId: { type: DataTypes.INTEGER, allowNull: true },
 }, { tableName: 'users' });
 
@@ -21,6 +21,9 @@ const Resource = sequelize.define('Resource', {
   capacite: { type: DataTypes.INTEGER, defaultValue: 0 },
   localisation: { type: DataTypes.STRING, allowNull: false },
   necessiteValidationAdmin: { type: DataTypes.BOOLEAN, defaultValue: false },
+  statutMaintenance: { type: DataTypes.ENUM('Disponible', 'Indisponible'), defaultValue: 'Disponible' },
+  maintenanceDebut: { type: DataTypes.DATE, allowNull: true },
+  maintenanceFin: { type: DataTypes.DATE, allowNull: true },
   qrCodeToken: { type: DataTypes.STRING, defaultValue: () => require('crypto').randomBytes(16).toString('hex') },
 }, { tableName: 'resources' });
 
@@ -32,7 +35,7 @@ const Reservation = sequelize.define('Reservation', {
   prioriteEffective: { type: DataTypes.INTEGER, defaultValue: 3 },
   prioriteForceeParAdmin: { type: DataTypes.BOOLEAN, defaultValue: false },
   statut: {
-    type: DataTypes.ENUM('EnAttente', 'Validee', 'Rejetee', 'Annulee', 'AnnuleeParPriorite', 'AnnuleeAbsence'),
+    type: DataTypes.ENUM('EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin', 'Validee', 'Rejetee', 'Annulee', 'AnnuleeParPriorite', 'AnnuleeAbsence'),
     defaultValue: 'EnAttente',
   },
   estRecurrente: { type: DataTypes.BOOLEAN, defaultValue: false },

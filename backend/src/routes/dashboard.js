@@ -15,13 +15,19 @@ router.get('/stats', async (req, res) => {
     where: { createdAt: { [Op.gte]: debutMois }, statut: { [Op.ne]: 'Annulee' } },
   });
   const enAttenteValidation = await Reservation.count({ where: { statut: 'EnAttente' } });
+  const enAttenteResponsable = await Reservation.count({ where: { statut: 'EnAttenteResponsable' } });
+  const enAttenteAdmin = await Reservation.count({ where: { statut: 'EnAttenteAdmin' } });
   const annuleesParPrioriteCeMois = await Reservation.count({
     where: { statut: 'AnnuleeParPriorite', createdAt: { [Op.gte]: debutMois } },
   });
 
   const nombreRessources = await Resource.count();
-  const joursEcoules = Math.max(1, Math.ceil((Date.now() - debutMois) / 86400000));
-  const capaciteHeures = Math.max(1, nombreRessources * 8 * joursEcoules);
+  const joursOuvres = Math.max(1, Array.from({ length: Math.ceil((Date.now() - debutMois) / 86400000) }, (_, i) => {
+    const d = new Date(debutMois);
+    d.setDate(d.getDate() + i);
+    return d.getDay() !== 0 && d.getDay() !== 6 ? 1 : 0;
+  }).reduce((a, b) => a + b, 0));
+  const capaciteHeures = Math.max(1, nombreRessources * 12 * joursOuvres);
 
   const validees = await Reservation.findAll({
     where: { createdAt: { [Op.gte]: debutMois }, statut: 'Validee' },
@@ -78,12 +84,30 @@ router.get('/stats', async (req, res) => {
     serviceMap.set(label, (serviceMap.get(label) || 0) + Math.max(duree, 0));
   }
 
+  const occupationParSalle = await Reservation.findAll({
+    where: { statut: 'Validee' },
+    include: [{ model: Resource, attributes: ['nom'] }],
+    raw: true,
+  });
+  const salleMap = new Map();
+  for (const reservation of occupationParSalle) {
+    const nomRessource = reservation['Resource.nom'] || 'Inconnu';
+    const duree = (new Date(reservation.dateFin) - new Date(reservation.dateDebut)) / 3600000;
+    salleMap.set(nomRessource, (salleMap.get(nomRessource) || 0) + Math.max(duree, 0));
+  }
+
   res.json({
-    reservationsCeMois, tauxOccupation, enAttenteValidation, annuleesParPrioriteCeMois,
+    reservationsCeMois, tauxOccupation, enAttenteValidation, enAttenteResponsable, enAttenteAdmin, annuleesParPrioriteCeMois,
+    heuresCreuses: Math.max(0, Math.round((capaciteHeures - heuresReservees) * 10) / 10),
     ressourcesLesPlusDemandees: parRessource.map((r) => ({ nom: r.nom, nombreReservations: Number(r.nombreReservations) })),
+    ressourcesLesMoinsUtilisees: Array.from(salleMap.entries())
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, 5)
+      .map(([nom, heures]) => ({ nom, heures: Math.round(heures * 10) / 10 })),
     graphiques: {
       reservParJour: badges.reverse(),
       occupationParService: Array.from(serviceMap.entries()).map(([service, heures]) => ({ service, heures: Math.round(heures * 10) / 10 })),
+      occupationParSalle: Array.from(salleMap.entries()).map(([nom, heures]) => ({ nom, heures: Math.round(heures * 10) / 10 })),
     },
     presenceEquipe,
   });

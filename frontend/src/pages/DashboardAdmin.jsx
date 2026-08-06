@@ -74,8 +74,20 @@ export default function DashboardAdmin() {
             <p className="valeur-stat">{stats.tauxOccupation}%</p>
           </div>
           <div className="carte-stat">
-            <p className="texte-discret">En attente de validation</p>
+            <p className="texte-discret">En attente standard</p>
             <p className="valeur-stat valeur-attention">{stats.enAttenteValidation}</p>
+          </div>
+          <div className="carte-stat">
+            <p className="texte-discret">En attente responsable</p>
+            <p className="valeur-stat valeur-attention">{stats.enAttenteResponsable}</p>
+          </div>
+          <div className="carte-stat">
+            <p className="texte-discret">En attente admin</p>
+            <p className="valeur-stat valeur-attention">{stats.enAttenteAdmin}</p>
+          </div>
+          <div className="carte-stat">
+            <p className="texte-discret">Heures creuses</p>
+            <p className="valeur-stat">{stats.heuresCreuses} h</p>
           </div>
           <div className="carte-stat">
             <p className="texte-discret">Annulées par priorité (mois)</p>
@@ -115,6 +127,18 @@ export default function DashboardAdmin() {
               <div className="barre-fond"><div className="barre-remplie" style={{ width: `${Math.min(100, r.nombreReservations * 4)}%` }} /></div>
             </div>
           ))}
+
+          <div style={{ marginTop: 20 }}>
+            <p className="panneau-titre">Ressources les moins utilisées</p>
+            {!stats?.ressourcesLesMoinsUtilisees || stats.ressourcesLesMoinsUtilisees.length === 0 ? (
+              <p className="texte-discret">Pas encore de données.</p>
+            ) : stats.ressourcesLesMoinsUtilisees.map((r) => (
+              <div key={r.nom} className="barre-stat">
+                <div className="barre-stat-entete"><span>{r.nom}</span><span className="texte-discret">{r.heures} h</span></div>
+                <div className="barre-fond"><div className="barre-remplie" style={{ width: `${Math.min(100, (r.heures / Math.max(1, stats.ressourcesLesMoinsUtilisees[0]?.heures || 1)) * 100)}%` }} /></div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

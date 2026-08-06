@@ -21,4 +21,11 @@ function reserverAuxAdmins(req, res, next) {
   next();
 }
 
-module.exports = { verifierToken, reserverAuxAdmins };
+function reserverAuxResponsables(req, res, next) {
+  if (!['Responsable', 'Administrateur'].includes(req.utilisateur?.role)) {
+    return res.status(403).json({ message: 'Accès réservé aux responsables de service.' });
+  }
+  next();
+}
+
+module.exports = { verifierToken, reserverAuxAdmins, reserverAuxResponsables };

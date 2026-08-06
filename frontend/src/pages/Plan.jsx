@@ -19,7 +19,7 @@ function estLibreMaintenant(reservations, ressourceId) {
   const now = new Date();
   return !reservations.some((r) =>
     r.resourceId === ressourceId &&
-    (r.statut === 'Validee' || r.statut === 'EnAttente') &&
+    (['Validee', 'EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'].includes(r.statut)) &&
     new Date(r.dateDebut) <= now && new Date(r.dateFin) > now
   );
 }

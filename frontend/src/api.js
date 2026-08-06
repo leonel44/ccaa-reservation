@@ -157,6 +157,16 @@ export const api = {
     clearCacheForPath('/reservations');
     return resultat;
   },
+  validerReservationResponsable: async (id) => {
+    const resultat = await requete(`/reservations/${id}/valider-responsable`, { method: 'PATCH' });
+    clearCacheForPath('/reservations');
+    return resultat;
+  },
+  rejeterReservationResponsable: async (id) => {
+    const resultat = await requete(`/reservations/${id}/rejeter-responsable`, { method: 'PATCH' });
+    clearCacheForPath('/reservations');
+    return resultat;
+  },
   annulerReservation: async (id) => {
     const resultat = await requete(`/reservations/${id}`, { method: 'DELETE' });
     clearCacheForPath('/reservations');

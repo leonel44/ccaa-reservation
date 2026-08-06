@@ -3,7 +3,7 @@ import Layout from '../components/Layout.jsx';
 import { api } from '../api.js';
 import { useConfirm, useToast } from '../components/ToastContext.jsx';
 
-const VIDE = { nom: '', type: 'Salle', capacite: 0, localisation: '', necessiteValidationAdmin: false };
+const VIDE = { nom: '', type: 'Salle', capacite: 0, localisation: '', necessiteValidationAdmin: false, statutMaintenance: 'Disponible', maintenanceDebut: '', maintenanceFin: '' };
 function formulaireVide() { return { ...VIDE }; }
 
 export default function AdminRessources() {
@@ -27,13 +27,19 @@ export default function AdminRessources() {
   );
 
   function ouvrirCreation() { setEnEdition(null); setForm(formulaireVide()); setModaleOuverte(true); }
-  function ouvrirEdition(r) { setEnEdition(r); setForm({ ...r }); setModaleOuverte(true); }
+  function ouvrirEdition(r) { setEnEdition(r); setForm({ ...r, maintenanceDebut: r.maintenanceDebut?.slice(0, 16) || '', maintenanceFin: r.maintenanceFin?.slice(0, 16) || '' }); setModaleOuverte(true); }
 
   async function enregistrer(e) {
     e.preventDefault();
     try {
-      if (enEdition) await api.modifierRessource(enEdition.id, form);
-      else await api.creerRessource(form);
+      const payload = {
+        ...form,
+        capacite: Number(form.capacite),
+        maintenanceDebut: form.maintenanceDebut ? new Date(form.maintenanceDebut).toISOString() : null,
+        maintenanceFin: form.maintenanceFin ? new Date(form.maintenanceFin).toISOString() : null,
+      };
+      if (enEdition) await api.modifierRessource(enEdition.id, payload);
+      else await api.creerRessource(payload);
       notifier(enEdition ? 'Ressource modifiée.' : 'Ressource créée.', 'succes');
       setModaleOuverte(false);
       recharger();
@@ -79,7 +85,7 @@ export default function AdminRessources() {
       <div className="panneau tableau-conteneur">
         <table className="table-donnees">
           <thead>
-            <tr><th>Nom</th><th>Type</th><th>Capacité</th><th>Localisation</th><th>Validation admin</th><th></th></tr>
+            <tr><th>Nom</th><th>Type</th><th>Capacité</th><th>Localisation</th><th>Validation admin</th><th>Maintenance</th><th></th></tr>
           </thead>
           <tbody>
             {ressourcesFiltrees.map((r) => (
@@ -89,6 +95,7 @@ export default function AdminRessources() {
                 <td>{r.capacite || '—'}</td>
                 <td>{r.localisation}</td>
                 <td>{r.necessiteValidationAdmin ? 'Oui' : 'Non'}</td>
+                <td>{r.statutMaintenance === 'Indisponible' ? `Indisponible (${new Date(r.maintenanceDebut).toLocaleString('fr-FR')} → ${new Date(r.maintenanceFin).toLocaleString('fr-FR')})` : 'Disponible'}</td>
                 <td>
                   <div className="actions-ligne">
                     <button className="bouton-secondaire bouton-petit" onClick={() => ouvrirEdition(r)}>Modifier</button>
@@ -130,6 +137,22 @@ export default function AdminRessources() {
                 <input type="checkbox" checked={form.necessiteValidationAdmin} onChange={(e) => setForm({ ...form, necessiteValidationAdmin: e.target.checked })} />
                 Nécessite une validation administrateur
               </label>
+
+              <label>Maintenance planifiée</label>
+              <select value={form.statutMaintenance} onChange={(e) => setForm({ ...form, statutMaintenance: e.target.value })}>
+                <option value="Disponible">Disponible</option>
+                <option value="Indisponible">Indisponible</option>
+              </select>
+              <div className="ligne-deux-colonnes">
+                <div>
+                  <label>Début maintenance</label>
+                  <input type="datetime-local" value={form.maintenanceDebut} onChange={(e) => setForm({ ...form, maintenanceDebut: e.target.value })} />
+                </div>
+                <div>
+                  <label>Fin maintenance</label>
+                  <input type="datetime-local" value={form.maintenanceFin} onChange={(e) => setForm({ ...form, maintenanceFin: e.target.value })} />
+                </div>
+              </div>
 
               <div className="actions-formulaire">
                 <button type="button" className="bouton-secondaire" onClick={() => setModaleOuverte(false)}>Annuler</button>

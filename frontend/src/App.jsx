@@ -18,11 +18,12 @@ const AdminUtilisateurs = lazy(() => import('./pages/AdminUtilisateurs.jsx'));
 const AdminJoursFeries = lazy(() => import('./pages/AdminJoursFeries.jsx'));
 const AdminJournal = lazy(() => import('./pages/AdminJournal.jsx'));
 const AdminSupport = lazy(() => import('./pages/AdminSupport.jsx'));
+const ResponsableReservations = lazy(() => import('./pages/ResponsableReservations.jsx'));
 const Support = lazy(() => import('./pages/Support.jsx'));
 
-function RouteProtegee({ children, adminSeulement = false }) {
+function RouteProtegee({ children, roles }) {
   if (!api.estConnecte()) return <Navigate to="/connexion" replace />;
-  if (adminSeulement && api.getRole() !== 'Administrateur') return <Navigate to="/" replace />;
+  if (roles && !roles.includes(api.getRole())) return <Navigate to="/" replace />;
   return children;
 }
 
@@ -40,14 +41,15 @@ export default function App() {
         <Route path="/reserver" element={<RouteProtegee><FormulaireReservation /></RouteProtegee>} />
         <Route path="/mes-reservations" element={<RouteProtegee><MesReservations /></RouteProtegee>} />
         <Route path="/support" element={<RouteProtegee><Support /></RouteProtegee>} />
+        <Route path="/responsable" element={<RouteProtegee roles={['Responsable', 'Administrateur']}><ResponsableReservations /></RouteProtegee>} />
 
-        <Route path="/admin" element={<RouteProtegee adminSeulement><DashboardAdmin /></RouteProtegee>} />
-        <Route path="/admin/support" element={<RouteProtegee adminSeulement><AdminSupport /></RouteProtegee>} />
-        <Route path="/admin/ressources" element={<RouteProtegee adminSeulement><AdminRessources /></RouteProtegee>} />
-        <Route path="/admin/services" element={<RouteProtegee adminSeulement><AdminServices /></RouteProtegee>} />
-        <Route path="/admin/utilisateurs" element={<RouteProtegee adminSeulement><AdminUtilisateurs /></RouteProtegee>} />
-        <Route path="/admin/jours-bloques" element={<RouteProtegee adminSeulement><AdminJoursFeries /></RouteProtegee>} />
-        <Route path="/admin/journal" element={<RouteProtegee adminSeulement><AdminJournal /></RouteProtegee>} />
+        <Route path="/admin" element={<RouteProtegee roles={['Administrateur']}><DashboardAdmin /></RouteProtegee>} />
+        <Route path="/admin/support" element={<RouteProtegee roles={['Administrateur']}><AdminSupport /></RouteProtegee>} />
+        <Route path="/admin/ressources" element={<RouteProtegee roles={['Administrateur']}><AdminRessources /></RouteProtegee>} />
+        <Route path="/admin/services" element={<RouteProtegee roles={['Administrateur']}><AdminServices /></RouteProtegee>} />
+        <Route path="/admin/utilisateurs" element={<RouteProtegee roles={['Administrateur']}><AdminUtilisateurs /></RouteProtegee>} />
+        <Route path="/admin/jours-bloques" element={<RouteProtegee roles={['Administrateur']}><AdminJoursFeries /></RouteProtegee>} />
+        <Route path="/admin/journal" element={<RouteProtegee roles={['Administrateur']}><AdminJournal /></RouteProtegee>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

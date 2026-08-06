@@ -8,13 +8,13 @@ function statutMaintenant(reservations, ressourceId) {
   const now = new Date();
   const active = reservations.find((r) =>
     r.resourceId === ressourceId &&
-    (r.statut === 'Validee' || r.statut === 'EnAttente') &&
+    (['Validee', 'EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'].includes(r.statut)) &&
     new Date(r.dateDebut) <= now && new Date(r.dateFin) > now
   );
   if (active) return { libre: false, jusqua: new Date(active.dateFin), motif: active.motif };
 
   const prochaine = reservations
-    .filter((r) => r.resourceId === ressourceId && (r.statut === 'Validee' || r.statut === 'EnAttente') && new Date(r.dateDebut) > now)
+    .filter((r) => r.resourceId === ressourceId && ['Validee', 'EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'].includes(r.statut) && new Date(r.dateDebut) > now)
     .sort((a, b) => new Date(a.dateDebut) - new Date(b.dateDebut))[0];
 
   return { libre: true, prochaine: prochaine ? new Date(prochaine.dateDebut) : null };
