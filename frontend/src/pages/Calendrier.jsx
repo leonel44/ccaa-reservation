@@ -28,6 +28,8 @@ export default function Calendrier() {
   const [chargementRessources, setChargementRessources] = useState(true);
   const [semaine, setSemaine] = useState(() => debutSemaine(new Date()));
   const [selection, setSelection] = useState(null); // { jourIndex, debut, fin }
+  const [recherche, setRecherche] = useState('');
+  const [typeFiltre, setTypeFiltre] = useState('Tous');
   const enTrainDeGlisser = useRef(false);
   const navigate = useNavigate();
 
@@ -36,12 +38,28 @@ export default function Calendrier() {
     [semaine]
   );
 
+  const ressourcesFiltrees = useMemo(() => {
+    return ressources.filter((r) => {
+      const correspondNom = r.nom.toLowerCase().includes(recherche.trim().toLowerCase());
+      const correspondType = typeFiltre === 'Tous' || r.type === typeFiltre;
+      return correspondNom && correspondType;
+    });
+  }, [ressources, recherche, typeFiltre]);
+
   useEffect(() => {
     api.getResources().then((data) => {
       setRessources(data);
       if (data.length > 0) setRessourceSelectionnee(data[0].id);
     }).finally(() => setChargementRessources(false));
   }, []);
+
+  useEffect(() => {
+    // Si la ressource sélectionnée disparaît du filtre courant, on bascule sur la première restante.
+    if (ressourcesFiltrees.length === 0) return;
+    if (!ressourcesFiltrees.some((r) => r.id === ressourceSelectionnee)) {
+      setRessourceSelectionnee(ressourcesFiltrees[0].id);
+    }
+  }, [ressourcesFiltrees]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!ressourceSelectionnee) return;
@@ -93,8 +111,22 @@ export default function Calendrier() {
       <div className="entete-page">
         <h1>Calendrier</h1>
         <div className="actions-entete">
+          <input
+            type="text"
+            placeholder="Rechercher une ressource..."
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            style={{ minWidth: 180 }}
+          />
+          <select value={typeFiltre} onChange={(e) => setTypeFiltre(e.target.value)}>
+            <option value="Tous">Tous les types</option>
+            <option value="Salle">Salle</option>
+            <option value="Equipement">Équipement</option>
+            <option value="Vehicule">Véhicule</option>
+          </select>
           <select value={ressourceSelectionnee ?? ''} onChange={(e) => setRessourceSelectionnee(Number(e.target.value))}>
-            {ressources.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
+            {ressourcesFiltrees.length === 0 && <option value="">Aucune ressource trouvée</option>}
+            {ressourcesFiltrees.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
           </select>
           <button className="bouton-secondaire" onClick={() => setSemaine((s) => { const d = new Date(s); d.setDate(d.getDate() - 7); return d; })}>◀</button>
           <button className="bouton-secondaire" onClick={() => setSemaine(debutSemaine(new Date()))}>Aujourd'hui</button>

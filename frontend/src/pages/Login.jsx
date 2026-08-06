@@ -54,6 +54,9 @@ export default function Login() {
           Pas encore de compte ? <Link to="/inscription" style={{ color: 'var(--bleu)', fontWeight: 500 }}>Créer un compte</Link>
         </p>
 
+        <p className="texte-discret texte-centre" style={{ marginTop: 10 }}>
+          Démo — admin@ccaa.cm ou employe@ccaa.cm · mot de passe : Passer123!
+        </p>
       </div>
     </div>
   );

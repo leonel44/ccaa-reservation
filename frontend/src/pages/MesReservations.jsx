@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import { api } from '../api.js';
@@ -21,6 +21,28 @@ export default function MesReservations() {
   const navigate = useNavigate();
   const demanderConfirmation = useConfirm();
   const notifier = useToast();
+
+  const stats = useMemo(() => {
+    const validees = reservations.filter((r) => r.statut === 'Validee');
+    const heuresTotales = validees.reduce((total, r) => total + (new Date(r.dateFin) - new Date(r.dateDebut)) / 3600000, 0);
+
+    const compteurParRessource = new Map();
+    for (const r of reservations) {
+      compteurParRessource.set(r.nomRessource, (compteurParRessource.get(r.nomRessource) || 0) + 1);
+    }
+    let ressourceFavorite = '—';
+    let maxCompte = 0;
+    for (const [nom, compte] of compteurParRessource.entries()) {
+      if (compte > maxCompte) { maxCompte = compte; ressourceFavorite = nom; }
+    }
+
+    return {
+      total: reservations.length,
+      validees: validees.length,
+      heuresTotales: Math.round(heuresTotales * 10) / 10,
+      ressourceFavorite,
+    };
+  }, [reservations]);
 
   function recharger() {
     setChargement(true);
@@ -70,6 +92,27 @@ export default function MesReservations() {
 
       {chargement && <p className="texte-discret">Chargement...</p>}
 
+      {!chargement && reservations.length > 0 && (
+        <div className="grille-stats" style={{ marginBottom: 24 }}>
+          <div className="carte-stat">
+            <p className="carte-stat-valeur">{stats.total}</p>
+            <p className="carte-stat-label">Réservations au total</p>
+          </div>
+          <div className="carte-stat">
+            <p className="carte-stat-valeur">{stats.validees}</p>
+            <p className="carte-stat-label">Réservations validées</p>
+          </div>
+          <div className="carte-stat">
+            <p className="carte-stat-valeur">{stats.heuresTotales} h</p>
+            <p className="carte-stat-label">Temps total réservé</p>
+          </div>
+          <div className="carte-stat">
+            <p className="carte-stat-valeur" style={{ fontSize: 18 }}>{stats.ressourceFavorite}</p>
+            <p className="carte-stat-label">Ressource la plus utilisée</p>
+          </div>
+        </div>
+      )}
+
       {!chargement && reservations.length === 0 && (
         <div className="etat-vide">
           <div className="etat-vide-icone">🗂️</div>
@@ -110,7 +153,7 @@ export default function MesReservations() {
                   </select>
                   <label>Commentaire</label>
                   <textarea rows={2} value={evaluations[r.id]?.note || ''} onChange={(e) => setEvaluations((m) => ({ ...m, [r.id]: { ...(m[r.id] || {}), note: e.target.value } }))} placeholder="Débriefing de la réunion" />
-                  <button type="button" className="bouton-primaire bouton-petit" onClick={() => enregistrerEvaluation(r.id)}>Enregistrer l’évaluation</button>
+                  <button type="button" className="bouton-primaire bouton-petit" onClick={() => enregistrerEvaluation(r.id)}>Enregistrer l'évaluation</button>
                 </div>
               )}
             </div>

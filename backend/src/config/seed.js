@@ -1,17 +1,11 @@
+const bcrypt = require('bcryptjs');
 const { Service, Resource, User } = require('../models');
 
 async function initialiser() {
-  const serviceParDefaut = await Service.findOne({ where: { nom: 'Administration (par défaut)' } });
-  if (serviceParDefaut) {
-    await User.destroy({ where: { serviceId: serviceParDefaut.id } });
-    await serviceParDefaut.destroy();
-  }
-
-  await User.destroy({ where: { email: 'admin@ccaa.cm' } });
-  await User.destroy({ where: { email: 'employe@ccaa.cm' } });
-
-  const dejaFait = await Resource.count();
+  const dejaFait = await Service.count();
   if (dejaFait > 0) return;
+
+  const administration = await Service.create({ nom: 'Administration (par défaut)', niveauPriorite: 3 });
 
   await Resource.bulkCreate([
     { nom: 'Salle de conférence', type: 'Salle', capacite: 30, localisation: 'Siège CCAA, Yaoundé — Rez-de-chaussée', necessiteValidationAdmin: true },
@@ -20,7 +14,12 @@ async function initialiser() {
     { nom: 'Vidéoprojecteur mobile', type: 'Equipement', capacite: 0, localisation: 'Magasin matériel' },
   ]);
 
-  console.log('Base initialisée avec les ressources par défaut.');
+  const motDePasseHash = await bcrypt.hash('Passer123!', 10);
+
+  await User.create({ nom: 'Ngono', prenom: 'Admin', email: 'admin@ccaa.cm', motDePasseHash, role: 'Administrateur', serviceId: administration.id });
+  await User.create({ nom: 'Ekedi', prenom: 'Léonel', email: 'employe@ccaa.cm', motDePasseHash, role: 'Employe', serviceId: administration.id });
+
+  console.log('Base initialisée avec les comptes de démonstration.');
 }
 
 module.exports = { initialiser };
