@@ -2,18 +2,20 @@ const { Sequelize } = require('sequelize');
 
 // Active le SSL automatiquement si DB_SSL=true est défini, ou si l'hôte
 // est un cluster TiDB Cloud (qui exige toujours une connexion chiffrée).
+const envHost = process.env.DB_HOST || 'localhost';
+const envPort = process.env.DB_PORT || '3306';
 const sslRequis = process.env.DB_SSL === 'true'
-  || (process.env.DB_HOST || '').includes('tidbcloud.com');
+  || envHost.includes('tidbcloud.com');
 
-console.log(`Connexion DB — host: ${process.env.DB_HOST}, port: ${process.env.DB_PORT}, SSL: ${sslRequis}`);
+console.log(`Connexion DB — host: ${envHost}, port: ${envPort}, SSL: ${sslRequis}`);
 
 const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
+  process.env.DB_NAME || 'ccaa_reservations',
+  process.env.DB_USER || 'root',
+  process.env.DB_PASSWORD || '',
   {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    host: envHost,
+    port: envPort,
     dialect: 'mysql',
     logging: false,
     dialectOptions: sslRequis
