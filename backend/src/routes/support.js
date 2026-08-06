@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { envoyerMailConfirmation } = require('../utils/mail');
 const { verifierToken, reserverAuxAdmins } = require('../middleware/auth');
-const { SupportMessage, User } = require('../models');
+const { SupportMessage, User, Notification } = require('../models');
 
 async function notifierAdmin({ sujet, message, utilisateur }) {
   const destinataire = process.env.SUPPORT_EMAIL || process.env.SMTP_FROM || process.env.SMTP_USER;
@@ -12,6 +12,27 @@ async function notifierAdmin({ sujet, message, utilisateur }) {
   await envoyerMailConfirmation({
     email: destinataire,
     sujet: `[CCAA Support] ${sujet}`,
+    texte,
+    html,
+  });
+}
+
+async function notifierUtilisateurResolution({ supportMessage, utilisateur, adminName }) {
+  const texte = `Bonjour ${utilisateur.prenom},\n\nVotre demande de support a été résolue par ${adminName}.\n\nSujet : ${supportMessage.sujet}\n\nRéponse : ${supportMessage.resolution || 'Votre demande a été traitée.'}`;
+  const html = `<p>Bonjour ${utilisateur.prenom},</p><p>Votre demande de support a été résolue par ${adminName}.</p><p><strong>Sujet :</strong> ${supportMessage.sujet}</p><p><strong>Réponse :</strong><br/>${(supportMessage.resolution || 'Votre demande a été traitée.').replace(/\n/g, '<br/>')}</p>`;
+
+  await Notification.create({
+    utilisateurId: utilisateur.id,
+    type: 'info',
+    message: `Support : ${supportMessage.sujet} — ${supportMessage.resolution || 'Votre demande a été résolue.'}`,
+  });
+
+  const destinataire = utilisateur.email;
+  if (!destinataire) return;
+
+  await envoyerMailConfirmation({
+    email: destinataire,
+    sujet: `[CCAA Support] Réponse à votre demande : ${supportMessage.sujet}`,
     texte,
     html,
   });
@@ -69,7 +90,7 @@ router.get('/', verifierToken, reserverAuxAdmins, async (req, res) => {
 });
 
 router.patch('/:id/resolve', verifierToken, reserverAuxAdmins, async (req, res) => {
-  const supportMessage = await SupportMessage.findByPk(req.params.id);
+  const supportMessage = await SupportMessage.findByPk(req.params.id, { include: [{ model: User, attributes: ['id', 'prenom', 'nom', 'email'] }] });
   if (!supportMessage) return res.status(404).json({ message: 'Message introuvable.' });
 
   supportMessage.statut = 'Resolu';
@@ -77,6 +98,17 @@ router.patch('/:id/resolve', verifierToken, reserverAuxAdmins, async (req, res) 
   supportMessage.resoluParId = req.utilisateur.sub;
   supportMessage.resoluLe = new Date();
   await supportMessage.save();
+
+  try {
+    const admin = await User.findByPk(req.utilisateur.sub);
+    await notifierUtilisateurResolution({
+      supportMessage,
+      utilisateur: supportMessage.User,
+      adminName: admin ? `${admin.prenom} ${admin.nom}` : 'un administrateur',
+    });
+  } catch (err) {
+    console.error('Erreur envoi notification utilisateur :', err);
+  }
 
   res.status(204).end();
 });
