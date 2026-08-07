@@ -135,7 +135,12 @@ router.post('/', async (req, res) => {
   }
 
   if (!creations.length) {
-    return res.status(409).json({ message: 'Aucune occurrence de réservation n’a pu être créée.', echec });
+    return res.status(409).json({
+      message: 'Aucune occurrence de réservation n’a pu être créée.',
+      echec,
+      raisons: echec.map((item) => item.message),
+      alternatives: echec.flatMap((item) => item.alternatives || []),
+    });
   }
 
   for (const reservation of creations) {

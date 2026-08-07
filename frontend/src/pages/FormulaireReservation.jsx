@@ -26,7 +26,7 @@ export default function FormulaireReservation() {
     estRecurrente: false,
     regleRecurrence: '4',
   });
-  const [statut, setStatut] = useState({ type: null, message: '', alternatives: [] });
+  const [statut, setStatut] = useState({ type: null, message: '', alternatives: [], raisons: [] });
   const [ajoutAttenteFait, setAjoutAttenteFait] = useState(false);
   const navigate = useNavigate();
   const notifier = useToast();
@@ -85,7 +85,8 @@ export default function FormulaireReservation() {
     } catch (err) {
       const message = err.donnees?.message || err.message || 'Une erreur est survenue.';
       const alternatives = err.donnees?.alternatives || err.donnees?.echec?.flatMap((item) => item.alternatives || []) || [];
-      setStatut({ type: 'erreur', message, alternatives });
+      const raisons = err.donnees?.raisons || err.donnees?.echec?.map((item) => item.message).filter(Boolean) || [];
+      setStatut({ type: 'erreur', message, alternatives, raisons });
     }
   }
 
@@ -164,6 +165,14 @@ export default function FormulaireReservation() {
             {statut.type === 'erreur' && (
               <div className="bandeau bandeau-erreur">
                 <p>{statut.message}</p>
+
+                {statut.raisons?.length > 0 && (
+                  <ul style={{ margin: '10px 0 0 16px', paddingLeft: 16, fontSize: 13 }}>
+                    {statut.raisons.map((raison, index) => (
+                      <li key={index}>{raison}</li>
+                    ))}
+                  </ul>
+                )}
 
                 {statut.alternatives.length > 0 && (
                   <div className="bandeau-alternatives">
