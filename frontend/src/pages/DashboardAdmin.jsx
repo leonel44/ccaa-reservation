@@ -13,7 +13,7 @@ export default function DashboardAdmin() {
     if (!silencieux) setChargement(true);
     Promise.all([
       api.getStatsDashboard().then(setStats),
-      api.getReservations().then((data) => setEnAttente(data.filter((r) => r.statut === 'EnAttente'))),
+      api.getReservations().then((data) => setEnAttente(data.filter((r) => r.statut === 'EnAttente' || r.statut === 'EnAttenteAdmin'))),
     ]).finally(() => setChargement(false));
   }
 
@@ -106,7 +106,10 @@ export default function DashboardAdmin() {
             <div key={r.id} className="ligne-demande">
               <div>
                 <p className="evenement-titre">{r.nomRessource} — {new Date(r.dateDebut).toLocaleString('fr-FR')}</p>
-                <p className="texte-discret">Demandé par {r.nomUtilisateur} · priorité {r.prioriteEffective}</p>
+                <p className="texte-discret">
+                  Demandé par {r.nomUtilisateur} · priorité {r.prioriteEffective}
+                  {r.statut === 'EnAttenteAdmin' && ' · en attente de validation admin'}
+                </p>
               </div>
               <div className="actions-ligne">
                 <button className="bouton-secondaire bouton-petit" onClick={() => rejeter(r.id)}>Rejeter</button>
