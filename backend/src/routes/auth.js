@@ -23,21 +23,22 @@ router.post('/login', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   const { nom, prenom, email, motDePasse, serviceId } = req.body;
+  const emailNormalise = String(email || '').trim().toLowerCase();
 
-  if (!email?.toLowerCase().endsWith('@ccaa.cm')) {
-    return res.status(400).json({ message: "L'inscription est réservée aux adresses @ccaa.cm." });
+  if (!emailNormalise || (!emailNormalise.endsWith('@ccaa.cm') && !emailNormalise.endsWith('@ccaa.aero'))) {
+    return res.status(400).json({ message: "L'inscription est réservée aux adresses @ccaa.cm et @ccaa.aero." });
   }
   if (!motDePasse || motDePasse.length < 8) {
     return res.status(400).json({ message: 'Le mot de passe doit contenir au moins 8 caractères.' });
   }
-  if (await User.findOne({ where: { email } })) {
+  if (await User.findOne({ where: { email: emailNormalise } })) {
     return res.status(409).json({ message: 'Un compte existe déjà avec cet email.' });
   }
   const service = await Service.findByPk(serviceId);
   if (!service) return res.status(400).json({ message: 'Service invalide.' });
 
   const utilisateur = await User.create({
-    nom, prenom, email,
+    nom, prenom, email: emailNormalise,
     motDePasseHash: await bcrypt.hash(motDePasse, 10),
     role: 'Employe',
     serviceId,

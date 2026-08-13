@@ -66,7 +66,15 @@ export default function Inscription() {
           </div>
 
           <label>Email professionnel</label>
-          <input type="email" placeholder="prenom.nom@ccaa.cm" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+          <input
+            type="email"
+            placeholder="prenom.nom@ccaa.cm ou prenom.nom@ccaa.aero"
+            pattern=".+@(ccaa\\.cm|ccaa\\.aero)$"
+            title="Utilisez une adresse @ccaa.cm ou @ccaa.aero"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
+          />
 
           <label>Service</label>
           <select value={form.serviceId} onChange={(e) => setForm({ ...form, serviceId: e.target.value })} required>

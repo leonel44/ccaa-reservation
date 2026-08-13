@@ -38,7 +38,15 @@ export default function Login() {
 
         <form onSubmit={gererConnexion}>
           <label>Email professionnel</label>
-          <input type="email" placeholder="prenom.nom@ccaa.cm" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input
+            type="email"
+            placeholder="prenom.nom@ccaa.cm ou prenom.nom@ccaa.aero"
+            pattern=".+@(ccaa\\.cm|ccaa\\.aero)$"
+            title="Utilisez une adresse @ccaa.cm ou @ccaa.aero"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
           <label>Mot de passe</label>
           <input type="password" placeholder="••••••••" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} required />
