@@ -6,7 +6,8 @@ const { verifierToken } = require('../middleware/auth');
 
 router.post('/login', async (req, res) => {
   const { email, motDePasse } = req.body;
-  const utilisateur = await User.findOne({ where: { email }, include: Service });
+  const emailNormalise = String(email || '').trim().toLowerCase();
+  const utilisateur = await User.findOne({ where: { email: emailNormalise }, include: Service });
 
   if (!utilisateur || !(await bcrypt.compare(motDePasse, utilisateur.motDePasseHash))) {
     return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });

@@ -64,9 +64,14 @@ async function requete(chemin, options = {}) {
 
 export const api = {
   // --- Auth ---
-  login: (email, motDePasse) =>
-    requete('/auth/login', { method: 'POST', body: JSON.stringify({ email, motDePasse }) }),
-  inscrire: (donnees) => requete('/auth/register', { method: 'POST', body: JSON.stringify(donnees) }),
+  login: (email, motDePasse) => {
+    const emailNormalise = String(email || '').trim().toLowerCase();
+    return requete('/auth/login', { method: 'POST', body: JSON.stringify({ email: emailNormalise, motDePasse }) });
+  },
+  inscrire: (donnees) => {
+    const payload = { ...donnees, email: String(donnees?.email || '').trim().toLowerCase() };
+    return requete('/auth/register', { method: 'POST', body: JSON.stringify(payload) });
+  },
   changerMotDePasse: (donnees) => requete('/auth/mot-de-passe', { method: 'PATCH', body: JSON.stringify(donnees) }),
 
   // --- Ressources ---

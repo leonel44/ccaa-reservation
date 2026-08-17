@@ -41,10 +41,9 @@ export default function Login() {
           <input
             type="email"
             placeholder="prenom.nom@ccaa.cm ou prenom.nom@ccaa.aero"
-            pattern=".+@(ccaa\\.cm|ccaa\\.aero)$"
             title="Utilisez une adresse @ccaa.cm ou @ccaa.aero"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value.trim().toLowerCase())}
             required
           />
 

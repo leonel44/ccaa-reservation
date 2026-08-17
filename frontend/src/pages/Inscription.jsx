@@ -69,10 +69,9 @@ export default function Inscription() {
           <input
             type="email"
             placeholder="prenom.nom@ccaa.cm ou prenom.nom@ccaa.aero"
-            pattern=".+@(ccaa\\.cm|ccaa\\.aero)$"
             title="Utilisez une adresse @ccaa.cm ou @ccaa.aero"
             value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            onChange={(e) => setForm({ ...form, email: e.target.value.trim().toLowerCase() })}
             required
           />
 
