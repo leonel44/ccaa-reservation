@@ -20,6 +20,7 @@ const AdminJournal = lazy(() => import('./pages/AdminJournal.jsx'));
 const AdminSupport = lazy(() => import('./pages/AdminSupport.jsx'));
 const ResponsableReservations = lazy(() => import('./pages/ResponsableReservations.jsx'));
 const Support = lazy(() => import('./pages/Support.jsx'));
+const PageIntrouvable = lazy(() => import('./pages/PageIntrouvable.jsx'));
 
 function RouteProtegee({ children, roles }) {
   if (!api.estConnecte()) return <Navigate to="/connexion" replace />;
@@ -51,7 +52,7 @@ export default function App() {
         <Route path="/admin/jours-bloques" element={<RouteProtegee roles={['Administrateur']}><AdminJoursFeries /></RouteProtegee>} />
         <Route path="/admin/journal" element={<RouteProtegee roles={['Administrateur']}><AdminJournal /></RouteProtegee>} />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<PageIntrouvable />} />
       </Routes>
     </Suspense>
   );

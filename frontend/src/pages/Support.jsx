@@ -27,39 +27,80 @@ export default function Support() {
     }
   }
 
+  const choixRapides = [
+    'Accès bloqué',
+    'Réservation impossible',
+    'Problème de planning',
+    'Autre urgence',
+  ];
+
   return (
     <Layout role="Employe">
-      <div className="entete-page" style={{ gap: 12 }}>
+      <div className="urgence-header">
+        <div className="urgence-badge">Urgence</div>
         <div>
           <h1>Assistance urgente</h1>
-          <p className="texte-discret" style={{ marginTop: 6 }}>
-            En cas de problème ou d'urgence, envoyez un message au support. Nous reviendrons vers vous rapidement.
+          <p className="texte-discret urgence-subtitle">
+            Déclarez un incident ou un blocage. Nous traitons les demandes prioritaires au plus vite.
           </p>
         </div>
       </div>
 
-      <div className="panneau" style={{ maxWidth: 640, marginTop: 12 }}>
-        <label htmlFor="support-sujet">Sujet</label>
-        <input
-          id="support-sujet"
-          type="text"
-          value={sujet}
-          onChange={(e) => setSujet(e.target.value)}
-          placeholder="Ex: Problème d’accès / Urgence planning"
-        />
+      <div className="urgence-grid">
+        <div className="panneau urgence-panel">
+          <div className="urgence-quick-actions">
+            {choixRapides.map((choix) => (
+              <button
+                key={choix}
+                type="button"
+                className={`bouton-secondaire urgence-chip ${sujet === choix ? 'urgence-chip-active' : ''}`}
+                onClick={() => setSujet(choix)}
+              >
+                {choix}
+              </button>
+            ))}
+          </div>
 
-        <label htmlFor="support-message">Message</label>
-        <textarea
-          id="support-message"
-          rows={8}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Décrivez votre problème et votre urgence le plus clairement possible"
-        />
+          <label htmlFor="support-sujet">Sujet</label>
+          <input
+            id="support-sujet"
+            type="text"
+            value={sujet}
+            onChange={(e) => setSujet(e.target.value)}
+            placeholder="Ex: Problème d’accès / Urgence planning"
+          />
 
-        <button type="button" className="bouton-primaire" onClick={envoyer} disabled={chargement}>
-          {chargement ? 'Envoi...' : 'Envoyer au support'}
-        </button>
+          <label htmlFor="support-message">Détail du problème</label>
+          <textarea
+            id="support-message"
+            rows={8}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Décrivez votre problème, le contexte, la ressource concernée et l’urgence estimée"
+          />
+
+          <button type="button" className="bouton-primaire urgence-submit" onClick={envoyer} disabled={chargement}>
+            {chargement ? 'Envoi...' : 'Envoyer au support'}
+          </button>
+        </div>
+
+        <aside className="urgence-side">
+          <div className="urgence-card urgence-card-danger">
+            <div className="urgence-icon">🚨</div>
+            <h2>Cas prioritaires</h2>
+            <ul>
+              <li>Accès bloqué à une salle</li>
+              <li>Erreur de réservation ou validation</li>
+              <li>Problème technique sur le planning</li>
+            </ul>
+          </div>
+
+          <div className="urgence-card">
+            <div className="urgence-icon">⏱️</div>
+            <h2>Réponse attendue</h2>
+            <p>Le support répond généralement dans la même journée pour les urgences de fonctionnement.</p>
+          </div>
+        </aside>
       </div>
     </Layout>
   );
