@@ -281,6 +281,7 @@ export const api = {
 
   // --- Profil / salle favorite ---
   getMonProfil: () => requete('/auth/moi'),
+  modifierMonProfil: (donnees) => requete('/auth/moi', { method: 'PATCH', body: JSON.stringify(donnees) }),
   definirSalleFavorite: (resourceId) => requete('/auth/favori', { method: 'PATCH', body: JSON.stringify({ resourceId }) }),
 
   // --- Session ---

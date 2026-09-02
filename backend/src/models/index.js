@@ -10,6 +10,7 @@ const User = sequelize.define('User', {
   nom: { type: DataTypes.STRING, allowNull: false },
   prenom: { type: DataTypes.STRING, allowNull: false },
   email: { type: DataTypes.STRING, allowNull: false, unique: true },
+  telephone: { type: DataTypes.STRING, allowNull: true },
   motDePasseHash: { type: DataTypes.STRING, allowNull: false },
   role: { type: DataTypes.ENUM('Employe', 'Responsable', 'Administrateur'), defaultValue: 'Employe' },
   salleFavoriteId: { type: DataTypes.INTEGER, allowNull: true },
@@ -68,6 +69,11 @@ const JournalAction = sequelize.define('JournalAction', {
   details: { type: DataTypes.STRING, allowNull: false },
 }, { tableName: 'journal_actions', updatedAt: false, createdAt: 'horodatage' });
 
+const HistoriqueConnexion = sequelize.define('HistoriqueConnexion', {
+  adresseIp: { type: DataTypes.STRING, allowNull: true },
+  navigateur: { type: DataTypes.STRING, allowNull: true },
+}, { tableName: 'historique_connexions' });
+
 // Liste d'attente : si une ressource est occupée sur le créneau souhaité, l'utilisateur peut
 // s'y inscrire. Dès que le créneau se libère (annulation, rejet...), le premier inscrit est notifié.
 const ListeAttente = sequelize.define('ListeAttente', {
@@ -101,6 +107,9 @@ Reservation.belongsTo(User, { foreignKey: 'utilisateurId' });
 User.hasMany(Notification, { foreignKey: 'utilisateurId' });
 Notification.belongsTo(User, { foreignKey: 'utilisateurId' });
 
+User.hasMany(HistoriqueConnexion, { foreignKey: 'utilisateurId' });
+HistoriqueConnexion.belongsTo(User, { foreignKey: 'utilisateurId' });
+
 User.hasMany(SupportMessage, { foreignKey: 'utilisateurId' });
 SupportMessage.belongsTo(User, { foreignKey: 'utilisateurId' });
 SupportMessage.belongsTo(User, { as: 'resoluPar', foreignKey: 'resoluParId' });
@@ -110,4 +119,4 @@ ListeAttente.belongsTo(Resource, { foreignKey: 'resourceId' });
 User.hasMany(ListeAttente, { foreignKey: 'utilisateurId' });
 ListeAttente.belongsTo(User, { foreignKey: 'utilisateurId' });
 
-module.exports = { sequelize, Service, User, Resource, Reservation, Notification, JournalAction, ListeAttente, JourFerie, SupportMessage, Contrainte };
+module.exports = { sequelize, Service, User, Resource, Reservation, Notification, JournalAction, HistoriqueConnexion, ListeAttente, JourFerie, SupportMessage, Contrainte };

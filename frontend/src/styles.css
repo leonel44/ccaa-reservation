@@ -837,6 +837,26 @@ input, select, textarea { padding: 12px 14px; font-size: 15px; }
 }
 .lien-rapide-icone { font-size: 26px; }
 
+/* ---------- Profil ---------- */
+.profil-grille { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; max-width: 940px; }
+.profil-grille > .profil-historique { grid-column: 1 / -1; }
+.profil-fait { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--bordure); font-size: 13px; }
+.profil-fait span { color: var(--texte-discret); }
+.profil-fait strong { text-align: right; }
+.profil-telephone-form { margin-top: 18px; }
+.profil-champ-action { display: flex; gap: 8px; align-items: flex-start; }
+.profil-champ-action input { flex: 1; }
+.profil-connexion { display: flex; justify-content: space-between; gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--bordure); font-size: 13px; }
+.profil-connexion:last-child { border-bottom: none; }
+.profil-connexion div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.profil-connexion div span { color: var(--texte-secondaire); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 768px) {
+  .profil-grille { grid-template-columns: 1fr; }
+  .profil-grille > .profil-historique { grid-column: auto; }
+  .profil-connexion { flex-direction: column; gap: 4px; }
+}
+
 /* ---------- Détail d'une ressource ---------- */
 .detail-ressource-hero { display: grid; grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr); gap: 28px; align-items: center; margin-bottom: 24px; }
 .detail-ressource-media { min-height: 250px; position: relative; overflow: hidden; border-radius: 18px; background: linear-gradient(135deg, var(--bleu-clair), #fff); border: 1px solid var(--bordure); box-shadow: var(--ombre-lg); }

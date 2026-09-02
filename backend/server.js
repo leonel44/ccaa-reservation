@@ -37,6 +37,14 @@ async function mettreAJourSchemaRessources() {
   }
 }
 
+async function mettreAJourSchemaProfil() {
+  const queryInterface = sequelize.getQueryInterface();
+  const colonnes = await queryInterface.describeTable('users');
+  if (!Object.keys(colonnes).some((nom) => nom.toLowerCase() === 'telephone')) {
+    await queryInterface.addColumn('users', 'telephone', { type: DataTypes.STRING, allowNull: true });
+  }
+}
+
 async function demarrer() {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.trim() === '' || process.env.JWT_SECRET === 'change-this-secret-key-in-production') {
     throw new Error('JWT_SECRET est manquant ou non sécurisé. Configure un secret fort dans le fichier .env.');
@@ -46,6 +54,7 @@ async function demarrer() {
   await sequelize.sync(estTiDB ? {} : { alter: true });
   // TiDB ne permet pas le mode alter utilisé en local : appliquer les ajouts explicitement.
   if (estTiDB) await mettreAJourSchemaRessources();
+  if (estTiDB) await mettreAJourSchemaProfil();
   await initialiser();
   noShowJob.demarrer();
   rappelJob.demarrer();

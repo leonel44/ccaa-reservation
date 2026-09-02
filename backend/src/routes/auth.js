@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
-const { User, Service, JournalAction } = require('../models');
+const { User, Service, JournalAction, HistoriqueConnexion } = require('../models');
 const { creerToken } = require('../utils/token');
 const { verifierToken } = require('../middleware/auth');
 
@@ -30,6 +30,11 @@ router.post('/login', async (req, res) => {
   }
 
   const token = creerToken(utilisateur);
+  await HistoriqueConnexion.create({
+    utilisateurId: utilisateur.id,
+    adresseIp: req.ip,
+    navigateur: req.get('user-agent')?.slice(0, 500) || null,
+  });
   res.json({
     token,
     nomComplet: `${utilisateur.prenom} ${utilisateur.nom}`,
@@ -90,14 +95,36 @@ router.patch('/mot-de-passe', verifierToken, async (req, res) => {
 });
 
 router.get('/moi', verifierToken, async (req, res) => {
-  const utilisateur = await User.findByPk(req.utilisateur.sub, { include: Service });
+  const utilisateur = await User.findByPk(req.utilisateur.sub, {
+    include: [Service, { model: HistoriqueConnexion, separate: true, limit: 10, order: [['createdAt', 'DESC']] }],
+  });
   if (!utilisateur) return res.status(404).end();
   res.json({
     nomComplet: `${utilisateur.prenom} ${utilisateur.nom}`,
     role: utilisateur.role,
+    email: utilisateur.email,
+    telephone: utilisateur.telephone || '',
+    nomService: utilisateur.Service?.nom || '',
     serviceId: utilisateur.serviceId,
     salleFavoriteId: utilisateur.salleFavoriteId,
+    historiqueConnexions: (utilisateur.HistoriqueConnexions || []).map((connexion) => ({
+      id: connexion.id,
+      date: connexion.createdAt,
+      adresseIp: connexion.adresseIp || 'Inconnue',
+      navigateur: connexion.navigateur || 'Navigateur inconnu',
+    })),
   });
+});
+
+router.patch('/moi', verifierToken, async (req, res) => {
+  const utilisateur = await User.findByPk(req.utilisateur.sub);
+  if (!utilisateur) return res.status(404).end();
+  const telephone = String(req.body.telephone || '').trim();
+  if (telephone && !/^\+?[0-9 ()-]{7,20}$/.test(telephone)) {
+    return res.status(400).json({ message: 'Numéro de téléphone invalide.' });
+  }
+  await utilisateur.update({ telephone: telephone || null });
+  res.status(204).end();
 });
 
 router.patch('/favori', verifierToken, async (req, res) => {
