@@ -80,6 +80,13 @@ const JourFerie = sequelize.define('JourFerie', {
   libelle: { type: DataTypes.STRING, allowNull: false },
 }, { tableName: 'jours_feries', timestamps: false });
 
+const Contrainte = sequelize.define('Contrainte', {
+  cle: { type: DataTypes.STRING, allowNull: false, unique: true },
+  valeur: { type: DataTypes.TEXT, allowNull: false },
+  type: { type: DataTypes.ENUM('nombre', 'texte', 'booleen'), defaultValue: 'texte' },
+  description: { type: DataTypes.TEXT, allowNull: true },
+}, { tableName: 'contraintes', timestamps: false });
+
 Service.hasMany(User, { foreignKey: 'serviceId' });
 User.belongsTo(Service, { foreignKey: 'serviceId' });
 
@@ -101,4 +108,4 @@ ListeAttente.belongsTo(Resource, { foreignKey: 'resourceId' });
 User.hasMany(ListeAttente, { foreignKey: 'utilisateurId' });
 ListeAttente.belongsTo(User, { foreignKey: 'utilisateurId' });
 
-module.exports = { sequelize, Service, User, Resource, Reservation, Notification, JournalAction, ListeAttente, JourFerie, SupportMessage };
+module.exports = { sequelize, Service, User, Resource, Reservation, Notification, JournalAction, ListeAttente, JourFerie, SupportMessage, Contrainte };

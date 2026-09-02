@@ -21,6 +21,7 @@ const LIENS_ADMIN = [
   { to: '/admin/services', label: 'Services & priorités', icone: '⭐' },
   { to: '/admin/utilisateurs', label: 'Utilisateurs', icone: '👥' },
   { to: '/admin/jours-bloques', label: 'Jours bloqués', icone: '📆' },
+  { to: '/admin/contraintes', label: 'Contraintes', icone: '⚙️' },
   { to: '/admin/support', label: 'Support', icone: '🆘' },
   { to: '/admin/journal', label: "Journal d'audit", icone: '📜' },
 ];

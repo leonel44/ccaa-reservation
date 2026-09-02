@@ -14,6 +14,7 @@ const appRoutes = {
   waitlist: require('./routes/waitlist'),
   support: require('./routes/support'),
   joursFeries: require('./routes/joursFeries'),
+  contraintes: require('./routes/contraintes'),
 };
 
 function getAllowedOrigins() {
@@ -74,6 +75,7 @@ function createApp() {
   app.use('/api/waitlist', appRoutes.waitlist);
   app.use('/api/support', appRoutes.support);
   app.use('/api/jours-feries', appRoutes.joursFeries);
+  app.use('/api/contraintes', appRoutes.contraintes);
 
   app.get('/api/health', (req, res) => res.json({ ok: true }));
 

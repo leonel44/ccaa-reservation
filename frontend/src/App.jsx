@@ -18,6 +18,7 @@ const AdminUtilisateurs = lazy(() => import('./pages/AdminUtilisateurs.jsx'));
 const AdminJoursFeries = lazy(() => import('./pages/AdminJoursFeries.jsx'));
 const AdminJournal = lazy(() => import('./pages/AdminJournal.jsx'));
 const AdminSupport = lazy(() => import('./pages/AdminSupport.jsx'));
+const AdminContraintes = lazy(() => import('./pages/AdminContraintes.jsx'));
 const ResponsableReservations = lazy(() => import('./pages/ResponsableReservations.jsx'));
 const Support = lazy(() => import('./pages/Support.jsx'));
 const PageIntrouvable = lazy(() => import('./pages/PageIntrouvable.jsx'));
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/admin/utilisateurs" element={<RouteProtegee roles={['Administrateur']}><AdminUtilisateurs /></RouteProtegee>} />
         <Route path="/admin/jours-bloques" element={<RouteProtegee roles={['Administrateur']}><AdminJoursFeries /></RouteProtegee>} />
         <Route path="/admin/journal" element={<RouteProtegee roles={['Administrateur']}><AdminJournal /></RouteProtegee>} />
+        <Route path="/admin/contraintes" element={<RouteProtegee roles={['Administrateur']}><AdminContraintes /></RouteProtegee>} />
 
         <Route path="*" element={<PageIntrouvable />} />
       </Routes>

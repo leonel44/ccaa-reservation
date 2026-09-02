@@ -248,6 +248,19 @@ export const api = {
     return resultat;
   },
 
+  // --- Contraintes ---
+  getContraintes: () => requete('/contraintes'),
+  modifierContrainte: async (cle, valeur, type = 'texte') => {
+    const resultat = await requete(`/contraintes/${cle}`, { method: 'PUT', body: JSON.stringify({ valeur, type }) });
+    clearCacheForPath('/contraintes');
+    return resultat;
+  },
+  modifierContraintes: async (updates) => {
+    const resultat = await requete('/contraintes', { method: 'PUT', body: JSON.stringify(updates) });
+    clearCacheForPath('/contraintes');
+    return resultat;
+  },
+
   // --- Profil / salle favorite ---
   getMonProfil: () => requete('/auth/moi'),
   definirSalleFavorite: (resourceId) => requete('/auth/favori', { method: 'PATCH', body: JSON.stringify({ resourceId }) }),

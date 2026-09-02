@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { Service, Resource, User } = require('../models');
+const { Service, Resource, User, Contrainte } = require('../models');
 
 async function initialiser() {
   const dejaFait = await Service.count();
@@ -20,7 +20,15 @@ async function initialiser() {
   await User.create({ nom: 'Martin', prenom: 'Julie', email: 'responsable@ccaa.cm', motDePasseHash, role: 'Responsable', serviceId: administration.id });
   await User.create({ nom: 'Ekedi', prenom: 'Léonel', email: 'employe@ccaa.cm', motDePasseHash, role: 'Employe', serviceId: administration.id });
 
-  console.log('Base initialisée avec les comptes de démonstration.');
+  // Initialiser les contraintes par défaut
+  await Contrainte.bulkCreate([
+    { cle: 'heureOuverture', valeur: '7', type: 'nombre', description: 'Heure d\'ouverture des réservations' },
+    { cle: 'heureFermeture', valeur: '19', type: 'nombre', description: 'Heure de fermeture des réservations' },
+    { cle: 'fuseauHoraire', valeur: 'Africa/Douala', type: 'texte', description: 'Fuseau horaire utilisé pour les réservations' },
+    { cle: 'autorisationsWeekend', valeur: 'false', type: 'booleen', description: 'Autoriser les réservations le week-end' },
+  ]);
+
+  console.log('Base initialisée avec les comptes de démonstration et les contraintes par défaut.');
 }
 
 module.exports = { initialiser };
