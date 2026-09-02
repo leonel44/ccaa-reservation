@@ -1,6 +1,23 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-const CACHE_TTL_MS = 15000;
 const cache = new Map();
+
+// Cache TTL différencié selon les données
+const CACHE_TTL = {
+  '/resources': 60000,       // 1 minute (données statiques)
+  '/services': 60000,        // 1 minute
+  '/users': 60000,           // 1 minute
+  '/reservations': 20000,    // 20 secondes (données qui changent)
+  '/notifications': 10000,   // 10 secondes
+  '/contraintes': 120000,    // 2 minutes
+  default: 15000,            // 15 secondes par défaut
+};
+
+function getTTL(chemin) {
+  for (const [path, ttl] of Object.entries(CACHE_TTL)) {
+    if (chemin.includes(path)) return ttl;
+  }
+  return CACHE_TTL.default;
+}
 
 function getToken() {
   return localStorage.getItem('ccaa_token');
@@ -17,10 +34,11 @@ function getCacheKey(chemin, options = {}) {
   return `${options.method || 'GET'}:${chemin}:${JSON.stringify(options.headers || {})}`;
 }
 
-function getCacheValue(cacheKey) {
+function getCacheValue(cacheKey, chemin) {
   const entree = cache.get(cacheKey);
   if (!entree) return null;
-  if (Date.now() - entree.temps > CACHE_TTL_MS) {
+  const ttl = getTTL(chemin);
+  if (Date.now() - entree.temps > ttl) {
     cache.delete(cacheKey);
     return null;
   }
@@ -39,7 +57,7 @@ async function requete(chemin, options = {}) {
 
   const cacheKey = getCacheKey(chemin, { ...options, headers });
   if (method === 'GET') {
-    const cacheValue = getCacheValue(cacheKey);
+    const cacheValue = getCacheValue(cacheKey, chemin);
     if (cacheValue) return cacheValue;
   }
 

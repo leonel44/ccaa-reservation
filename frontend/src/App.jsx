@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { api } from './api.js';
 import PageLoader from './components/PageLoader.jsx';
@@ -30,6 +30,23 @@ function RouteProtegee({ children, roles }) {
 }
 
 export default function App() {
+  useEffect(() => {
+    if (!api.estConnecte()) return;
+
+    const prefetch = async () => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      try {
+        api.getResources().catch(() => {});
+        api.getServices().catch(() => {});
+        api.getUtilisateurs().catch(() => {});
+      } catch (err) {
+        console.log('Prefetch error:', err);
+      }
+    };
+
+    prefetch();
+  }, []);
+
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
