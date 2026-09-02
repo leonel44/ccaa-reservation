@@ -21,7 +21,7 @@ async function mettreAJourSchemaRessources() {
   const [lignes] = await sequelize.query(
     "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'resources'"
   );
-  const nomsColonnes = new Set(lignes.map((ligne) => String(ligne.COLUMN_NAME).toLowerCase()));
+  const nomsColonnes = new Set(lignes.map((ligne) => String(ligne.COLUMN_NAME ?? ligne.column_name ?? Object.values(ligne)[0]).toLowerCase()));
   const nouvellesColonnes = {
     statutMaintenance: {
       type: DataTypes.ENUM('Disponible', 'Indisponible'),
