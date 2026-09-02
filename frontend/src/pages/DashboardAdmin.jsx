@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import { api } from '../api.js';
 import { useToast } from '../components/ToastContext.jsx';
@@ -8,6 +9,7 @@ export default function DashboardAdmin() {
   const [enAttente, setEnAttente] = useState([]);
   const [chargement, setChargement] = useState(true);
   const notifier = useToast();
+  const navigate = useNavigate();
 
   function recharger(silencieux = false) {
     if (!silencieux) setChargement(true);
@@ -50,12 +52,24 @@ export default function DashboardAdmin() {
   return (
     <Layout role="Administrateur">
       <div className="entete-page">
-        <h1>Tableau de bord</h1>
+        <div>
+          <p className="admin-eyebrow">Pilotage opérationnel</p>
+          <h1>Tableau de bord</h1>
+          <p className="admin-sous-titre">Suivez l’activité des ressources et traitez les demandes prioritaires.</p>
+        </div>
         <div className="actions-entete">
           <button className="bouton-secondaire" onClick={exporter}>⬇️ Exporter en CSV</button>
           <button className="bouton-primaire" onClick={exporterExcel}>⬇️ Exporter en Excel</button>
         </div>
       </div>
+
+      {!chargement && stats && (
+        <div className="admin-actions-rapides">
+          <div><span className="admin-actions-rapides-point" /> Système opérationnel</div>
+          <button className="bouton-secondaire bouton-petit" onClick={() => navigate('/admin/ressources')}>Gérer les ressources</button>
+          <button className="bouton-secondaire bouton-petit" onClick={() => navigate('/admin/journal')}>Consulter le journal</button>
+        </div>
+      )}
 
       {chargement && (
         <div className="grille-stats">

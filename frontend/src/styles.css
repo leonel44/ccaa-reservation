@@ -821,7 +821,14 @@ input, select, textarea { padding: 12px 14px; font-size: 15px; }
 .point-direct { width: 8px; height: 8px; border-radius: 50%; background: var(--vert); display: inline-block; animation: pulse-direct 1.6s ease infinite; }
 @keyframes pulse-direct { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
 .accueil-titre { font-size: 32px; }
+.accueil-sous-titre { max-width: 640px; margin-top: 8px; color: var(--texte-secondaire); font-size: 14px; }
 .accueil-resume { color: var(--texte-secondaire); font-size: 15px; margin: 4px 0 26px; }
+.accueil-indicateurs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0 24px; }
+.accueil-indicateur { display: flex; flex-direction: column; gap: 2px; padding: 16px 18px; border: 1px solid var(--bordure); border-radius: 14px; background: rgba(255,255,255,0.78); box-shadow: var(--ombre); }
+.accueil-indicateur span { color: var(--texte-secondaire); font-size: 12px; font-weight: 600; }
+.accueil-indicateur strong { color: var(--texte); font-size: 26px; line-height: 1.2; }
+.accueil-indicateur small { color: var(--texte-discret); font-size: 11px; }
+.accueil-indicateur-principal { border-color: rgba(45,108,223,0.3); background: linear-gradient(135deg, var(--bleu-clair), rgba(255,255,255,0.85)); }
 
 .grille-cartes-accueil { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
 .carte-accueil-squelette { height: 168px; border-radius: 20px; }
@@ -849,6 +856,18 @@ input, select, textarea { padding: 12px 14px; font-size: 15px; }
   font-size: 14px; font-weight: 500; color: var(--texte);
 }
 .lien-rapide-icone { font-size: 26px; }
+
+.admin-eyebrow { margin-bottom: 3px; color: var(--bleu); font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.admin-sous-titre { margin-top: 6px; color: var(--texte-secondaire); font-size: 13px; }
+.admin-actions-rapides { display: flex; align-items: center; gap: 10px; margin: -4px 0 20px; padding: 10px 12px; border: 1px solid var(--bordure); border-radius: var(--rayon-sm); background: rgba(255,255,255,0.66); }
+.admin-actions-rapides > div { display: flex; align-items: center; gap: 7px; margin-right: auto; color: var(--texte-secondaire); font-size: 12px; font-weight: 700; }
+.admin-actions-rapides-point { width: 8px; height: 8px; border-radius: 50%; background: var(--vert); box-shadow: 0 0 0 4px var(--vert-clair); }
+
+@media (max-width: 768px) {
+  .accueil-indicateurs { grid-template-columns: 1fr; }
+  .admin-actions-rapides { align-items: flex-start; flex-wrap: wrap; }
+  .admin-actions-rapides > div { flex-basis: 100%; }
+}
 
 /* ---------- Profil ---------- */
 .profil-grille { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; max-width: 940px; }

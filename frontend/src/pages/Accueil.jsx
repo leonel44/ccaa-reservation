@@ -78,6 +78,7 @@ export default function Accueil() {
   );
 
   const librres = cartes.filter((c) => c.statut.libre).length;
+  const occupees = cartes.length - librres;
   const favorite = cartes.find((c) => c.ressource.id === salleFavoriteId);
 
   function reserverFavorite() {
@@ -102,7 +103,8 @@ export default function Accueil() {
           <p className="accueil-eyebrow">
             <span className="point-direct" /> En direct
           </p>
-          <h1 className="accueil-titre">Disponibilité maintenant</h1>
+          <h1 className="accueil-titre">Votre espace de réservation</h1>
+          <p className="accueil-sous-titre">Trouvez rapidement une salle ou un équipement disponible au siège de la CCAA.</p>
         </div>
         <div className="accueil-actions">
           <p className="texte-discret">Mis à jour {dernierRafraichissement.toLocaleTimeString('fr-FR')}</p>
@@ -122,9 +124,11 @@ export default function Accueil() {
       )}
 
       {!chargement && (
-        <p className="accueil-resume">
-          <strong>{librres}</strong> ressource{librres > 1 ? 's' : ''} libre{librres > 1 ? 's' : ''} sur {cartes.length}
-        </p>
+        <div className="accueil-indicateurs">
+          <div className="accueil-indicateur accueil-indicateur-principal"><span>Disponibles maintenant</span><strong>{librres}</strong><small>sur {cartes.length} ressources</small></div>
+          <div className="accueil-indicateur"><span>En cours d'utilisation</span><strong>{occupees}</strong><small>occupation en temps réel</small></div>
+          <div className="accueil-indicateur"><span>Synchronisation</span><strong>15 s</strong><small>actualisation automatique</small></div>
+        </div>
       )}
 
       {chargement && (
