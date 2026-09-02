@@ -1,19 +1,9 @@
-const CACHE_NAME = 'ccaa-cache-v1';
+const CACHE_NAME = 'ccaa-cache-v2';
 const RUNTIME_CACHE = 'ccaa-runtime-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/assets/index.css',
-  '/assets/logo-ccaa.jpg',
-];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache).catch(() => {
-        console.log('Certains assets n\'etaient pas disponibles lors du precache');
-      });
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.add('/').catch(() => {}))
   );
   self.skipWaiting();
 });
@@ -29,6 +19,7 @@ self.addEventListener('activate', (event) => {
     })
   );
   self.clients.claim();
+  self.registration?.navigationPreload?.enable?.();
 });
 
 self.addEventListener('fetch', (event) => {
@@ -47,11 +38,17 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => caches.match(request))
     );
+  } else if (request.mode === 'navigate') {
+    // Toujours récupérer le HTML récent : Vite change les noms de chunks à chaque build.
+    event.respondWith(
+      (self.registration.navigationPreload ? self.registration.navigationPreload
+        .getState().then((state) => state.enabled ? event.preloadResponse : null) : null)
+        .then((preload) => preload || fetch(request))
+        .catch(() => caches.match('/index.html').then((response) => response || caches.match('/')))
+    );
   } else {
     event.respondWith(
-      caches.match(request).then((response) => {
-        return response || fetch(request).catch(() => new Response('Offline'));
-      })
+      fetch(request).catch(() => caches.match(request))
     );
   }
 });
