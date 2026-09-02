@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import { api } from '../api.js';
@@ -9,6 +9,10 @@ function formatDateLocale(date) {
   const mois = String(date.getMonth() + 1).padStart(2, '0');
   const jour = String(date.getDate()).padStart(2, '0');
   return `${annee}-${mois}-${jour}`;
+}
+
+function formatHeure(heure) {
+  return heure.slice(0, 5);
 }
 
 export default function FormulaireReservation() {
@@ -38,6 +42,20 @@ export default function FormulaireReservation() {
     });
   }, []);
 
+  const ressourceSelectionnee = useMemo(() => ressources.find((r) => r.id === Number(form.resourceId)), [ressources, form.resourceId]);
+  
+  const dureeMinutes = useMemo(() => {
+    const debut = new Date(`2000-01-01T${form.heureDebut}`);
+    const fin = new Date(`2000-01-01T${form.heureFin}`);
+    return Math.max(0, Math.round((fin - debut) / 60000));
+  }, [form.heureDebut, form.heureFin]);
+
+  const estValide = useMemo(() => {
+    const debut = new Date(`${form.date}T${form.heureDebut}`);
+    const fin = new Date(`${form.date}T${form.heureFin}`);
+    return fin > debut && form.motif.trim().length > 0 && form.nombreParticipants > 0;
+  }, [form]);
+
   function majChamp(champ, valeur) {
     setForm((f) => ({ ...f, [champ]: valeur }));
   }
@@ -61,12 +79,12 @@ export default function FormulaireReservation() {
     const { dateDebut, dateFin } = construireDates();
 
     if (dateFin <= dateDebut) {
-      setStatut({ type: 'erreur', message: 'L’heure de fin doit être postérieure à l’heure de début.', alternatives: [] });
+      setStatut({ type: 'erreur', message: 'Heure de fin doit etre posterieure a heure de debut.', alternatives: [] });
       return;
     }
 
     if (estDansLePasse(form.date, form.heureDebut) || estDansLePasse(form.date, form.heureFin)) {
-      setStatut({ type: 'erreur', message: 'Impossible de réserver un créneau déjà passé.', alternatives: [] });
+      setStatut({ type: 'erreur', message: 'Impossible de reserver un creneau deja passe.', alternatives: [] });
       return;
     }
 
@@ -80,7 +98,7 @@ export default function FormulaireReservation() {
         estRecurrente: form.estRecurrente,
         regleRecurrence: form.estRecurrente ? String(form.regleRecurrence || '4') : null,
       });
-      setStatut({ type: 'succes', message: 'Réservation envoyée avec succès.' });
+      setStatut({ type: 'succes', message: 'Reservation envoyee avec succes.' });
       setTimeout(() => navigate('/mes-reservations'), 1200);
     } catch (err) {
       const message = err.donnees?.message || err.message || 'Une erreur est survenue.';
@@ -101,7 +119,7 @@ export default function FormulaireReservation() {
         nombreParticipants: Number(form.nombreParticipants),
       });
       setAjoutAttenteFait(true);
-      notifier('Ajouté à la liste d\'attente — tu seras notifié si le créneau se libère.', 'succes');
+      notifier('Ajoute a la liste d attente - tu seras notifie si le creneau se libere.', 'succes');
     } catch (err) {
       notifier(err.message, 'erreur');
     }
@@ -111,60 +129,95 @@ export default function FormulaireReservation() {
     <Layout role="Employe">
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <div className="carte-formulaire">
-          <h1>Nouvelle réservation</h1>
-          <p className="texte-discret" style={{ margin: '6px 0 18px' }}>
-            Réservations possibles du lundi au vendredi, entre 7h et 19h.
+          <h1>Nouvelle reservation</h1>
+          <p className="texte-discret" style={{ margin: '6px 0 24px' }}>
+            Reservations possibles du lundi au vendredi, entre 7h et 19h.
           </p>
 
           <form onSubmit={envoyerReservation}>
-            <label>Ressource</label>
-            <select value={form.resourceId} onChange={(e) => majChamp('resourceId', e.target.value)} required>
-              {ressources.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
-            </select>
+            {/* Section 1: Salle */}
+            <div className="formulaire-section">
+              <p className="formulaire-section-titre">📍 Ressource</p>
+              <select value={form.resourceId} onChange={(e) => majChamp('resourceId', e.target.value)} required>
+                {ressources.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
+              </select>
+              {ressourceSelectionnee && (
+                <div style={{ background: 'var(--bleu-clair)', padding: '12px 14px', borderRadius: 'var(--rayon-sm)', marginTop: 8, fontSize: 13 }}>
+                  <p style={{ margin: 0 }}>📍 {ressourceSelectionnee.localisation}</p>
+                  {ressourceSelectionnee.capacite > 0 && <p style={{ margin: '4px 0 0', color: 'var(--texte-secondaire)' }}>👥 Capacite: {ressourceSelectionnee.capacite} personnes</p>}
+                </div>
+              )}
+            </div>
 
-            <div className="ligne-deux-colonnes">
-              <div>
-                <label>Date</label>
-                <input type="date" value={form.date} min={dateAujourdHui} onChange={(e) => majChamp('date', e.target.value)} required />
+            {/* Section 2: Quand */}
+            <div className="formulaire-section">
+              <p className="formulaire-section-titre">📅 Quand</p>
+              <div className="ligne-deux-colonnes">
+                <div>
+                  <label>Date</label>
+                  <input type="date" value={form.date} min={dateAujourdHui} onChange={(e) => majChamp('date', e.target.value)} required />
+                </div>
+                <div>
+                  <label>Duree / Participants</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <input type="number" min="1" value={form.nombreParticipants} onChange={(e) => majChamp('nombreParticipants', e.target.value)} placeholder="Nb pers." required style={{ marginBottom: 0 }} />
+                    <input type="text" disabled value={`${dureeMinutes}min`} placeholder="Duree" style={{ marginBottom: 0, background: 'var(--fond)', cursor: 'not-allowed', color: 'var(--texte-discret)' }} />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label>Participants</label>
-                <input type="number" min="1" value={form.nombreParticipants} onChange={(e) => majChamp('nombreParticipants', e.target.value)} required />
+
+              <div className="ligne-deux-colonnes">
+                <div>
+                  <label>Heure de debut</label>
+                  <input type="time" min="07:00" max="19:00" value={form.heureDebut} onChange={(e) => majChamp('heureDebut', e.target.value)} required />
+                </div>
+                <div>
+                  <label>Heure de fin</label>
+                  <input type="time" min="07:00" max="19:00" value={form.heureFin} onChange={(e) => majChamp('heureFin', e.target.value)} required />
+                </div>
+              </div>
+
+              {/* Aperçu */}
+              <div style={{ background: 'rgba(15, 76, 156, 0.06)', padding: '12px 14px', borderRadius: 'var(--rayon-sm)', marginTop: 10, fontSize: 13, border: '1px solid rgba(15, 76, 156, 0.1)' }}>
+                <p style={{ margin: '0 0 6px', fontWeight: 600, color: 'var(--bleu)' }}>📌 Apercu</p>
+                <p style={{ margin: '0', color: 'var(--texte)' }}>
+                  {new Date(`${form.date}T${form.heureDebut}`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  <br />
+                  {formatHeure(form.heureDebut)} → {formatHeure(form.heureFin)} ({dureeMinutes}min)
+                </p>
               </div>
             </div>
 
-            <div className="ligne-deux-colonnes">
-              <div>
-                <label>Heure de début</label>
-                <input type="time" min="07:00" max="19:00" value={form.heureDebut} onChange={(e) => majChamp('heureDebut', e.target.value)} required />
-              </div>
-              <div>
-                <label>Heure de fin</label>
-                <input type="time" min="07:00" max="19:00" value={form.heureFin} onChange={(e) => majChamp('heureFin', e.target.value)} required />
-              </div>
+            {/* Section 3: Details */}
+            <div className="formulaire-section">
+              <p className="formulaire-section-titre">📝 Details</p>
+              <label>Motif de la reservation</label>
+              <textarea rows={3} placeholder="Ex : reunion de coordination trimestrielle" value={form.motif} onChange={(e) => majChamp('motif', e.target.value)} required />
             </div>
 
-            <label>Motif de la réservation</label>
-            <textarea rows={3} placeholder="Ex : réunion de coordination trimestrielle" value={form.motif} onChange={(e) => majChamp('motif', e.target.value)} required />
-
-            <label className="case-a-cocher">
-              <input type="checkbox" checked={form.estRecurrente} onChange={(e) => majChamp('estRecurrente', e.target.checked)} />
-              Réservation hebdomadaire récurrente
-            </label>
-
-            {form.estRecurrente && (
-              <label>Nombre d’occurrences hebdomadaires
-                <select value={form.regleRecurrence} onChange={(e) => majChamp('regleRecurrence', e.target.value)}>
-                  <option value="2">2 semaines</option>
-                  <option value="4">4 semaines</option>
-                  <option value="8">8 semaines</option>
-                </select>
+            {/* Section 4: Recurrence */}
+            <div className="formulaire-section">
+              <label className="case-a-cocher" style={{ marginBottom: 14 }}>
+                <input type="checkbox" checked={form.estRecurrente} onChange={(e) => majChamp('estRecurrente', e.target.checked)} />
+                🔁 Reservation hebdomadaire recurrente
               </label>
-            )}
 
+              {form.estRecurrente && (
+                <div>
+                  <label>Nombre d occurrences hebdomadaires</label>
+                  <select value={form.regleRecurrence} onChange={(e) => majChamp('regleRecurrence', e.target.value)}>
+                    <option value="2">2 semaines</option>
+                    <option value="4">4 semaines</option>
+                    <option value="8">8 semaines</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Messages */}
             {statut.type === 'erreur' && (
               <div className="bandeau bandeau-erreur">
-                <p>{statut.message}</p>
+                <p>❌ {statut.message}</p>
 
                 {statut.raisons?.length > 0 && (
                   <ul style={{ margin: '10px 0 0 16px', paddingLeft: 16, fontSize: 13 }}>
@@ -176,7 +229,7 @@ export default function FormulaireReservation() {
 
                 {statut.alternatives.length > 0 && (
                   <div className="bandeau-alternatives">
-                    Créneaux libres suggérés :
+                    ✨ Creneaux libres suggeres :
                     <div>
                       {statut.alternatives.map((c, i) => (
                         <span key={i} className="puce-creneau">
@@ -189,18 +242,19 @@ export default function FormulaireReservation() {
 
                 {!ajoutAttenteFait ? (
                   <button type="button" className="bouton-secondaire bouton-petit" style={{ marginTop: 10 }} onClick={rejoindreListeAttente}>
-                    🔔 Me prévenir si ce créneau se libère
+                    🔔 Me prevenir si ce creneau se libere
                   </button>
                 ) : (
-                  <p style={{ marginTop: 10, fontSize: 12.5, color: 'var(--vert)' }}>✓ Tu es sur la liste d'attente pour ce créneau.</p>
+                  <p style={{ marginTop: 10, fontSize: 12.5, color: 'var(--vert)' }}>✓ Tu es sur la liste d attente pour ce creneau.</p>
                 )}
               </div>
             )}
-            {statut.type === 'succes' && <div className="bandeau bandeau-succes"><p>{statut.message}</p></div>}
+            {statut.type === 'succes' && <div className="bandeau bandeau-succes"><p>✓ {statut.message}</p></div>}
 
-            <div className="actions-formulaire">
+            {/* Actions */}
+            <div className="actions-formulaire" style={{ marginTop: 24 }}>
               <button type="button" className="bouton-secondaire" onClick={() => navigate('/')}>Annuler</button>
-              <button type="submit" className="bouton-primaire">Envoyer la demande</button>
+              <button type="submit" className="bouton-primaire" disabled={!estValide}>Envoyer la demande</button>
             </div>
           </form>
         </div>

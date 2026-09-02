@@ -4,12 +4,28 @@ const { User, Service, JournalAction } = require('../models');
 const { creerToken } = require('../utils/token');
 const { verifierToken } = require('../middleware/auth');
 
+function validerEmail(value) {
+  return typeof value === 'string' && /^[^\s@]+@ccaa\.(cm|aero)$/i.test(value.trim());
+}
+
+function validerMotDePasse(value) {
+  return typeof value === 'string' && value.length >= 8;
+}
+
 router.post('/login', async (req, res) => {
   const { email, motDePasse } = req.body;
   const emailNormalise = String(email || '').trim().toLowerCase();
+
+  if (!validerEmail(emailNormalise)) {
+    return res.status(400).json({ message: 'Adresse email invalide.' });
+  }
+  if (!validerMotDePasse(motDePasse)) {
+    return res.status(400).json({ message: 'Mot de passe invalide.' });
+  }
+
   const utilisateur = await User.findOne({ where: { email: emailNormalise }, include: Service });
 
-  if (!utilisateur || !(await bcrypt.compare(motDePasse, utilisateur.motDePasseHash))) {
+  if (!utilisateur || !(await bcrypt.compare(String(motDePasse), utilisateur.motDePasseHash))) {
     return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
   }
 
@@ -26,21 +42,26 @@ router.post('/register', async (req, res) => {
   const { nom, prenom, email, motDePasse, serviceId } = req.body;
   const emailNormalise = String(email || '').trim().toLowerCase();
 
-  if (!emailNormalise || (!emailNormalise.endsWith('@ccaa.cm') && !emailNormalise.endsWith('@ccaa.aero'))) {
+  if (!validerEmail(emailNormalise)) {
     return res.status(400).json({ message: "L'inscription est réservée aux adresses @ccaa.cm et @ccaa.aero." });
   }
-  if (!motDePasse || motDePasse.length < 8) {
+  if (!validerMotDePasse(motDePasse)) {
     return res.status(400).json({ message: 'Le mot de passe doit contenir au moins 8 caractères.' });
   }
   if (await User.findOne({ where: { email: emailNormalise } })) {
     return res.status(409).json({ message: 'Un compte existe déjà avec cet email.' });
   }
+  if (!serviceId || Number.isNaN(Number(serviceId))) {
+    return res.status(400).json({ message: 'Service invalide.' });
+  }
   const service = await Service.findByPk(serviceId);
   if (!service) return res.status(400).json({ message: 'Service invalide.' });
 
   const utilisateur = await User.create({
-    nom, prenom, email: emailNormalise,
-    motDePasseHash: await bcrypt.hash(motDePasse, 10),
+    nom: String(nom || '').trim(),
+    prenom: String(prenom || '').trim(),
+    email: emailNormalise,
+    motDePasseHash: await bcrypt.hash(String(motDePasse), 10),
     role: 'Employe',
     serviceId,
   });

@@ -5,8 +5,19 @@ function verifierToken(req, res, next) {
   if (!header || !header.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Non authentifié.' });
   }
+
+  const token = header.slice(7).trim();
+  if (!token) {
+    return res.status(401).json({ message: 'Jeton invalide.' });
+  }
+
   try {
-    const payload = jwt.verify(header.slice(7), process.env.JWT_SECRET);
+    const secret = process.env.JWT_SECRET;
+    if (!secret || secret.trim() === '' || secret === 'change-this-secret-key-in-production') {
+      return res.status(500).json({ message: 'Configuration de sécurité JWT invalide.' });
+    }
+
+    const payload = jwt.verify(token, secret);
     req.utilisateur = payload;
     next();
   } catch {
