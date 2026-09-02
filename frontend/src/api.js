@@ -195,6 +195,11 @@ export const api = {
     clearCacheForPath('/reservations');
     return resultat;
   },
+  modifierReservation: async (id, donnees) => {
+    const resultat = await requete(`/reservations/${id}`, { method: 'PUT', body: JSON.stringify(donnees) });
+    clearCacheForPath('/reservations');
+    return resultat;
+  },
   checkIn: (id, token) => requete(`/reservations/${id}/checkin?token=${token}`, { method: 'POST' }),
   evaluerReservation: async (id, note, satisfaction) => {
     const resultat = await requete(`/reservations/${id}/evaluation`, {

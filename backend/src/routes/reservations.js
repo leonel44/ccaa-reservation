@@ -253,6 +253,43 @@ router.delete('/:id', async (req, res) => {
   res.status(204).end();
 });
 
+router.put('/:id', async (req, res) => {
+  const reservation = await Reservation.findByPk(req.params.id, { include: [Resource, { model: User, include: Service }] });
+  if (!reservation) return res.status(404).end();
+  if (reservation.utilisateurId !== req.utilisateur.sub) return res.status(403).json({ message: 'Tu ne peux modifier que tes propres réservations.' });
+  if (!['Validee', 'EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'].includes(reservation.statut)) {
+    return res.status(400).json({ message: 'Cette réservation ne peut plus être modifiée.' });
+  }
+
+  const debutDate = new Date(req.body.dateDebut);
+  const finDate = new Date(req.body.dateFin);
+  const participants = Number(req.body.nombreParticipants);
+  if (Number.isNaN(debutDate.getTime()) || Number.isNaN(finDate.getTime()) || finDate <= debutDate) {
+    return res.status(400).json({ message: 'Dates invalides.' });
+  }
+  if (!req.body.motif || !String(req.body.motif).trim()) return res.status(400).json({ message: 'Le motif est requis.' });
+
+  const resourceId = Number(req.body.resourceId || reservation.resourceId);
+  const ressource = await Resource.findByPk(resourceId);
+  if (!ressource) return res.status(400).json({ message: 'Ressource introuvable.' });
+  if (!Number.isInteger(participants) || participants < 1) return res.status(400).json({ message: 'Le nombre de participants est invalide.' });
+  if (ressource.capacite > 0 && participants > ressource.capacite) return res.status(400).json({ message: `Cette salle ne peut accueillir que ${ressource.capacite} personnes.` });
+  if (ressource.statutMaintenance === 'Indisponible' && ressource.maintenanceDebut && ressource.maintenanceFin && debutDate < new Date(ressource.maintenanceFin) && finDate > new Date(ressource.maintenanceDebut)) {
+    return res.status(400).json({ message: 'Cette ressource est indisponible pour travaux sur la période choisie.' });
+  }
+
+  const chevauchement = await Reservation.findOne({ where: {
+    id: { [Op.ne]: reservation.id }, resourceId, statut: { [Op.in]: ['EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin', 'Validee'] },
+    dateDebut: { [Op.lt]: finDate }, dateFin: { [Op.gt]: debutDate },
+  } });
+  if (chevauchement) return res.status(409).json({ message: 'Ce créneau est déjà réservé pour cette ressource.' });
+
+  await reservation.update({ resourceId, dateDebut: debutDate, dateFin: finDate, motif: String(req.body.motif).trim(), nombreParticipants: participants });
+  await JournalAction.create({ utilisateurId: req.utilisateur.sub, action: 'RESERVATION_MODIFIEE', details: `Réservation #${reservation.id} modifiée.` });
+  const complete = await Reservation.findByPk(reservation.id, { include: [Resource, { model: User, include: Service }] });
+  res.json({ reservation: versDto(complete) });
+});
+
 router.patch('/:id/evaluation', async (req, res) => {
   const reservation = await Reservation.findByPk(req.params.id);
   if (!reservation) return res.status(404).end();

@@ -345,7 +345,7 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
   overflow: hidden; color: white; line-height: 1.25;
 }
 .cal-evenement.statut-Validee { background: var(--vert); }
-.cal-evenement.statut-EnAttente { background: var(--orange); }
+.cal-evenement.statut-EnAttente, .cal-evenement.statut-EnAttenteResponsable, .cal-evenement.statut-EnAttenteAdmin { background: var(--orange); }
 .cal-evenement.statut-AnnuleeParPriorite, .cal-evenement.statut-AnnuleeAbsence, .cal-evenement.statut-Annulee { background: var(--texte-discret); text-decoration: line-through; }
 
 .legende { display: flex; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
@@ -354,6 +354,19 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .pastille-validee { background: var(--vert); }
 .pastille-attente { background: var(--orange); }
 .pastille-annulee { background: var(--texte-discret); }
+.pastille-libre { background: var(--blanc); border: 1px solid var(--vert); }
+
+.cal-filtre-case { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; color: var(--texte-secondaire); }
+.cal-filtre-case input { width: auto; min-height: 0; margin: 0; }
+.cal-vues { display: inline-flex; gap: 4px; }
+.cal-vues button { padding: 7px 10px; font-size: 12px; }
+.calendrier-mois { display: grid; grid-template-columns: repeat(7, minmax(100px, 1fr)); background: var(--blanc); border: 1px solid var(--bordure); border-radius: var(--rayon); overflow-x: auto; box-shadow: var(--ombre); }
+.cal-mois-jour { min-height: 120px; padding: 8px; border-right: 1px solid var(--bordure); border-bottom: 1px solid var(--bordure); }
+.cal-mois-jour-hors-periode { background: var(--fond); opacity: 0.65; }
+.cal-mois-evenement { display: block; width: 100%; margin-top: 8px; padding: 5px 6px; border: none; border-radius: 5px; color: white; text-align: left; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-mois-evenement.statut-Validee { background: var(--vert); }
+.cal-mois-evenement.statut-EnAttente, .cal-mois-evenement.statut-EnAttenteResponsable, .cal-mois-evenement.statut-EnAttenteAdmin { background: var(--orange); }
+.cal-mois-libre { display: block; margin-top: 10px; color: var(--vert); font-size: 11px; }
 
 /* ---------- Liste de réservations (Mes réservations) ---------- */
 .liste-reservations { display: flex; flex-direction: column; gap: 10px; }

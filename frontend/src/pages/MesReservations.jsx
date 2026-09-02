@@ -136,6 +136,7 @@ export default function MesReservations() {
                 {(r.statut === 'Validee' || r.statut === 'EnAttente') && (
                   <>
                     <a className="bouton-secondaire bouton-petit" href={api.urlIcal(r.id)} target="_blank" rel="noreferrer">📅 iCal</a>
+                    <button className="bouton-secondaire bouton-petit" onClick={() => navigate('/reserver', { state: { reservation: r } })}>Modifier</button>
                     <button className="bouton-secondaire bouton-petit" onClick={() => annuler(r.id)}>Annuler</button>
                   </>
                 )}

@@ -5,6 +5,7 @@ import { api } from '../api.js';
 
 const HEURES = Array.from({ length: 11 }, (_, i) => 8 + i);
 const JOURS_LABEL = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+const STATUTS_ACTIFS = ['Validee', 'EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'];
 
 function formatDateLocale(date) {
   const annee = date.getFullYear();
@@ -30,6 +31,9 @@ export default function Calendrier() {
   const [selection, setSelection] = useState(null); // { jourIndex, debut, fin }
   const [recherche, setRecherche] = useState('');
   const [typeFiltre, setTypeFiltre] = useState('Tous');
+  const [serviceFiltre, setServiceFiltre] = useState('Tous');
+  const [uniquementMesReservations, setUniquementMesReservations] = useState(false);
+  const [vue, setVue] = useState('semaine');
   const enTrainDeGlisser = useRef(false);
   const navigate = useNavigate();
 
@@ -46,10 +50,12 @@ export default function Calendrier() {
     });
   }, [ressources, recherche, typeFiltre]);
 
+  const services = useMemo(() => [...new Set(reservations.map((r) => r.nomService).filter(Boolean))].sort(), [reservations]);
+  const reservationsFiltrees = useMemo(() => reservations.filter((r) => serviceFiltre === 'Tous' || r.nomService === serviceFiltre), [reservations, serviceFiltre]);
+
   useEffect(() => {
     api.getResources().then((data) => {
       setRessources(data);
-      if (data.length > 0) setRessourceSelectionnee(data[0].id);
     }).finally(() => setChargementRessources(false));
   }, []);
 
@@ -63,14 +69,29 @@ export default function Calendrier() {
 
   useEffect(() => {
     if (!ressourceSelectionnee) return;
-    const fin = new Date(semaine); fin.setDate(fin.getDate() + 7);
-    api.getReservations({ resourceId: ressourceSelectionnee, depuis: semaine.toISOString(), jusqua: fin.toISOString() }).then(setReservations);
-  }, [ressourceSelectionnee, semaine]);
+    const fin = new Date(semaine); fin.setDate(fin.getDate() + (vue === 'mois' ? 42 : 7));
+    const params = { depuis: semaine.toISOString(), jusqua: fin.toISOString() };
+    if (uniquementMesReservations) params.mesReservations = true;
+    api.getReservations(params).then(setReservations).catch(() => setReservations([]));
+  }, [semaine, vue, uniquementMesReservations]);
 
   function reservationPourCase(jour, heure) {
-    return reservations.find((r) => {
+    return reservationsFiltrees.find((r) => {
       const debut = new Date(r.dateDebut), fin = new Date(r.dateFin);
-      return debut.toDateString() === jour.toDateString() && debut.getHours() <= heure && fin.getHours() > heure;
+      return (ressourceSelectionnee === null || r.resourceId === ressourceSelectionnee) && debut.toDateString() === jour.toDateString() && debut.getHours() <= heure && fin.getHours() > heure;
+    });
+  }
+
+  function reservationsDuJour(jour) {
+    return reservationsFiltrees.filter((r) => (ressourceSelectionnee === null || r.resourceId === ressourceSelectionnee) && new Date(r.dateDebut).toDateString() === jour.toDateString());
+  }
+
+  function changerPeriode(delta) {
+    setSemaine((date) => {
+      const suivante = new Date(date);
+      if (vue === 'mois') suivante.setMonth(suivante.getMonth() + delta);
+      else suivante.setDate(suivante.getDate() + delta * 7);
+      return vue === 'mois' ? debutSemaine(new Date(suivante.getFullYear(), suivante.getMonth(), 1)) : suivante;
     });
   }
 
@@ -124,13 +145,23 @@ export default function Calendrier() {
             <option value="Equipement">Équipement</option>
             <option value="Vehicule">Véhicule</option>
           </select>
-          <select value={ressourceSelectionnee ?? ''} onChange={(e) => setRessourceSelectionnee(Number(e.target.value))}>
+          <select value={ressourceSelectionnee ?? ''} onChange={(e) => setRessourceSelectionnee(e.target.value ? Number(e.target.value) : null)}>
+            <option value="">Toutes les ressources</option>
             {ressourcesFiltrees.length === 0 && <option value="">Aucune ressource trouvée</option>}
             {ressourcesFiltrees.map((r) => <option key={r.id} value={r.id}>{r.nom}</option>)}
           </select>
-          <button className="bouton-secondaire" onClick={() => setSemaine((s) => { const d = new Date(s); d.setDate(d.getDate() - 7); return d; })}>◀</button>
+          <select value={serviceFiltre} onChange={(e) => setServiceFiltre(e.target.value)}>
+            <option value="Tous">Tous les services</option>
+            {services.map((service) => <option key={service} value={service}>{service}</option>)}
+          </select>
+          <label className="cal-filtre-case"><input type="checkbox" checked={uniquementMesReservations} onChange={(e) => setUniquementMesReservations(e.target.checked)} /> Mes réservations</label>
+          <div className="cal-vues">
+            <button className={vue === 'semaine' ? 'bouton-primaire' : 'bouton-secondaire'} onClick={() => setVue('semaine')}>Semaine</button>
+            <button className={vue === 'mois' ? 'bouton-primaire' : 'bouton-secondaire'} onClick={() => setVue('mois')}>Mois</button>
+          </div>
+          <button className="bouton-secondaire" onClick={() => changerPeriode(-1)}>◀</button>
           <button className="bouton-secondaire" onClick={() => setSemaine(debutSemaine(new Date()))}>Aujourd'hui</button>
-          <button className="bouton-secondaire" onClick={() => setSemaine((s) => { const d = new Date(s); d.setDate(d.getDate() + 7); return d; })}>▶</button>
+          <button className="bouton-secondaire" onClick={() => changerPeriode(1)}>▶</button>
         </div>
       </div>
 
@@ -138,7 +169,7 @@ export default function Calendrier() {
 
       {chargementRessources && <div className="squelette" style={{ height: 400 }} />}
 
-      {!chargementRessources && (
+      {!chargementRessources && vue === 'semaine' && (
         <div className="calendrier-grille" onMouseUp={terminerGlisse} onMouseLeave={() => (enTrainDeGlisser.current = false)}>
           <div className="cal-entete-vide" />
           {jours.map((j, i) => <div key={i} className="cal-jour-entete">{JOURS_LABEL[i]} {j.getDate()}/{j.getMonth() + 1}</div>)}
@@ -168,7 +199,20 @@ export default function Calendrier() {
         </div>
       )}
 
+      {!chargementRessources && vue === 'mois' && (
+        <div className="calendrier-mois">
+          {Array.from({ length: 42 }, (_, index) => { const jour = new Date(semaine); jour.setDate(jour.getDate() + index); const evenements = reservationsDuJour(jour); return (
+            <div key={jour.toISOString()} className={`cal-mois-jour ${jour.getMonth() !== semaine.getMonth() ? 'cal-mois-jour-hors-periode' : ''}`}>
+              <strong>{jour.getDate()}</strong>
+              {evenements.map((reservation) => <button key={reservation.id} className={`cal-mois-evenement statut-${reservation.statut}`} onClick={() => navigate(`/ressources/${reservation.resourceId}`)} title={reservation.motif}>{reservation.motif}</button>)}
+              {evenements.length === 0 && <span className="cal-mois-libre">Libre</span>}
+            </div>
+          ); })}
+        </div>
+      )}
+
       <div className="legende">
+        <span className="legende-item"><span className="pastille pastille-libre" /> Libre</span>
         <span className="legende-item"><span className="pastille pastille-validee" /> Validée</span>
         <span className="legende-item"><span className="pastille pastille-attente" /> En attente</span>
         <span className="legende-item"><span className="pastille pastille-annulee" /> Annulée</span>

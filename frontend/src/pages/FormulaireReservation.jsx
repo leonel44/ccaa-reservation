@@ -18,15 +18,16 @@ function formatHeure(heure) {
 export default function FormulaireReservation() {
   const location = useLocation();
   const prefill = location.state || {};
+  const reservationEdition = prefill.reservation || null;
   const [ressources, setRessources] = useState([]);
   const dateAujourdHui = formatDateLocale(new Date());
   const [form, setForm] = useState({
-    resourceId: prefill.resourceId || '',
-    date: prefill.date || dateAujourdHui,
-    heureDebut: prefill.heureDebut || '10:00',
-    heureFin: prefill.heureFin || '11:00',
-    nombreParticipants: 1,
-    motif: '',
+    resourceId: reservationEdition?.resourceId || prefill.resourceId || '',
+    date: reservationEdition?.dateDebut?.slice(0, 10) || prefill.date || dateAujourdHui,
+    heureDebut: reservationEdition?.dateDebut?.slice(11, 16) || prefill.heureDebut || '10:00',
+    heureFin: reservationEdition?.dateFin?.slice(11, 16) || prefill.heureFin || '11:00',
+    nombreParticipants: reservationEdition?.nombreParticipants || 1,
+    motif: reservationEdition?.motif || '',
     estRecurrente: false,
     regleRecurrence: '4',
   });
@@ -89,7 +90,7 @@ export default function FormulaireReservation() {
     }
 
     try {
-      await api.creerReservation({
+      const donnees = {
         resourceId: Number(form.resourceId),
         dateDebut: dateDebut.toISOString(),
         dateFin: dateFin.toISOString(),
@@ -97,8 +98,10 @@ export default function FormulaireReservation() {
         nombreParticipants: Number(form.nombreParticipants),
         estRecurrente: form.estRecurrente,
         regleRecurrence: form.estRecurrente ? String(form.regleRecurrence || '4') : null,
-      });
-      setStatut({ type: 'succes', message: 'Reservation envoyee avec succes.' });
+      };
+      if (reservationEdition) await api.modifierReservation(reservationEdition.id, donnees);
+      else await api.creerReservation(donnees);
+      setStatut({ type: 'succes', message: reservationEdition ? 'Reservation modifiee avec succes.' : 'Reservation envoyee avec succes.' });
       setTimeout(() => navigate('/mes-reservations'), 1200);
     } catch (err) {
       const message = err.donnees?.message || err.message || 'Une erreur est survenue.';
@@ -129,7 +132,7 @@ export default function FormulaireReservation() {
     <Layout role="Employe">
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <div className="carte-formulaire">
-          <h1>Nouvelle reservation</h1>
+          <h1>{reservationEdition ? 'Modifier la reservation' : 'Nouvelle reservation'}</h1>
           <p className="texte-discret" style={{ margin: '6px 0 24px' }}>
             Reservations possibles du lundi au vendredi, entre 7h et 19h.
           </p>
@@ -254,7 +257,7 @@ export default function FormulaireReservation() {
             {/* Actions */}
             <div className="actions-formulaire" style={{ marginTop: 24 }}>
               <button type="button" className="bouton-secondaire" onClick={() => navigate('/')}>Annuler</button>
-              <button type="submit" className="bouton-primaire" disabled={!estValide}>Envoyer la demande</button>
+              <button type="submit" className="bouton-primaire" disabled={!estValide}>{reservationEdition ? 'Enregistrer les modifications' : 'Envoyer la demande'}</button>
             </div>
           </form>
         </div>
