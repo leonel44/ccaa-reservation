@@ -1,12 +1,31 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import { api } from '../api.js';
 import { useToast } from '../components/ToastContext.jsx';
 
+const HEURES_CONTROLE = Array.from({ length: 12 }, (_, index) => index + 7);
+const JOURS_CONTROLE = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven'];
+const STATUTS_ACTIFS = ['Validee', 'EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'];
+
+function debutSemaine(date) {
+  const resultat = new Date(date);
+  const jour = (resultat.getDay() + 6) % 7;
+  resultat.setDate(resultat.getDate() - jour);
+  resultat.setHours(0, 0, 0, 0);
+  return resultat;
+}
+
+function memeJour(dateA, dateB) { return dateA.toDateString() === dateB.toDateString(); }
+
 export default function DashboardAdmin() {
   const [stats, setStats] = useState(null);
   const [enAttente, setEnAttente] = useState([]);
+  const [ressources, setRessources] = useState([]);
+  const [reservationsCalendrier, setReservationsCalendrier] = useState([]);
+  const [semaineControle, setSemaineControle] = useState(() => debutSemaine(new Date()));
+  const [filtreRessource, setFiltreRessource] = useState('Toutes');
+  const [filtreStatut, setFiltreStatut] = useState('Tous');
   const [chargement, setChargement] = useState(true);
   const notifier = useToast();
   const navigate = useNavigate();
@@ -16,12 +35,14 @@ export default function DashboardAdmin() {
     Promise.all([
       api.getStatsDashboard().then(setStats),
       api.getReservations().then((data) => setEnAttente(data.filter((r) => r.statut === 'EnAttente' || r.statut === 'EnAttenteAdmin'))),
+      api.getResources().then(setRessources),
+      api.getReservations({ depuis: new Date().toISOString(), jusqua: new Date(Date.now() + 7 * 24 * 3600000).toISOString() }).then(setReservationsCalendrier),
     ]).finally(() => setChargement(false));
   }
 
   useEffect(() => {
     recharger();
-    const intervalle = setInterval(() => recharger(true), 30000);
+    const intervalle = setInterval(() => recharger(true), 15000);
     return () => clearInterval(intervalle);
   }, []);
 
@@ -48,6 +69,22 @@ export default function DashboardAdmin() {
 
   const maxReservJour = Math.max(1, ...(stats?.graphiques?.reservParJour || []).map((item) => item.nombreReservations));
   const maxHeuresService = Math.max(1, ...(stats?.graphiques?.occupationParService || []).map((item) => item.heures));
+
+  const ressourcesControle = useMemo(() => ressources.filter((ressource) => filtreRessource === 'Toutes' || String(ressource.id) === filtreRessource), [ressources, filtreRessource]);
+  const joursControle = useMemo(() => Array.from({ length: 5 }, (_, index) => { const jour = new Date(semaineControle); jour.setDate(jour.getDate() + index); return jour; }), [semaineControle]);
+  const reservationsControle = useMemo(() => reservationsCalendrier.filter((reservation) => filtreStatut === 'Tous' || reservation.statut === filtreStatut), [reservationsCalendrier, filtreStatut]);
+
+  function reservationPour(ressourceId, jour, heure) {
+    return reservationsControle.find((reservation) => {
+      const debut = new Date(reservation.dateDebut);
+      const fin = new Date(reservation.dateFin);
+      return reservation.resourceId === ressourceId && memeJour(debut, jour) && debut.getHours() <= heure && fin.getHours() > heure;
+    });
+  }
+
+  function naviguerSemaine(delta) {
+    setSemaineControle((date) => { const suivante = new Date(date); suivante.setDate(suivante.getDate() + delta * 7); return suivante; });
+  }
 
   return (
     <Layout role="Administrateur">
@@ -109,6 +146,52 @@ export default function DashboardAdmin() {
           </div>
         </div>
       )}
+
+      <section className="centre-controle">
+        <div className="centre-controle-entete">
+          <div>
+            <p className="admin-eyebrow">Occupation en direct</p>
+            <h2>Centre de contrôle</h2>
+            <p className="texte-discret">Visualisez l’utilisation de chaque ressource, du lundi au vendredi, de 7h à 19h.</p>
+          </div>
+          <div className="centre-controle-live"><span /> Actualisé automatiquement toutes les 15 secondes</div>
+        </div>
+        <div className="centre-controle-outils">
+          <select value={filtreRessource} onChange={(e) => setFiltreRessource(e.target.value)}>
+            <option value="Toutes">Toutes les ressources</option>
+            {ressources.map((ressource) => <option key={ressource.id} value={ressource.id}>{ressource.nom}</option>)}
+          </select>
+          <select value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)}>
+            <option value="Tous">Tous les statuts</option>
+            <option value="Validee">Validées</option>
+            <option value="EnAttente">En attente</option>
+            <option value="EnAttenteResponsable">En attente responsable</option>
+            <option value="EnAttenteAdmin">En attente admin</option>
+          </select>
+          <div className="centre-controle-navigation">
+            <button className="bouton-secondaire bouton-petit" onClick={() => naviguerSemaine(-1)}>←</button>
+            <strong>{semaineControle.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</strong>
+            <button className="bouton-secondaire bouton-petit" onClick={() => setSemaineControle(debutSemaine(new Date()))}>Aujourd’hui</button>
+            <button className="bouton-secondaire bouton-petit" onClick={() => naviguerSemaine(1)}>→</button>
+          </div>
+        </div>
+        <div className="centre-controle-legende">
+          <span><i className="controle-libre" /> Libre</span><span><i className="controle-validee" /> Validée</span><span><i className="controle-attente" /> En attente</span>
+        </div>
+        <div className="controle-calendrier-scroll">
+          <div className="controle-calendrier">
+            <div className="controle-ressource-entete">Ressource</div>
+            {joursControle.map((jour, index) => <div className="controle-jour-entete" key={jour.toISOString()}>{JOURS_CONTROLE[index]}<strong>{jour.getDate()}</strong></div>)}
+            {ressourcesControle.map((ressource) => (
+              <div className="controle-ligne" key={ressource.id}>
+                <button className="controle-ressource" onClick={() => navigate(`/ressources/${ressource.id}`)}><strong>{ressource.nom}</strong><span>{ressource.localisation}</span></button>
+                {joursControle.map((jour) => <div className="controle-jour" key={jour.toISOString()}>{HEURES_CONTROLE.map((heure) => { const reservation = reservationPour(ressource.id, jour, heure); return <div className={`controle-case ${reservation ? `controle-statut-${reservation.statut}` : 'controle-case-libre'}`} data-heure={`${heure}:00`} key={heure} title={reservation ? `${reservation.motif} · ${reservation.nomUtilisateur || ''}` : 'Libre'}>{reservation && new Date(reservation.dateDebut).getHours() === heure && <span>{reservation.motif}</span>}</div>; })}</div>)}
+              </div>
+            ))}
+          </div>
+        </div>
+        {!ressourcesControle.length && <p className="texte-discret">Aucune ressource ne correspond à ce filtre.</p>}
+      </section>
 
       <div className="grille-deux-colonnes">
         <div className="panneau">

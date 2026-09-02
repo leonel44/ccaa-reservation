@@ -863,10 +863,44 @@ input, select, textarea { padding: 12px 14px; font-size: 15px; }
 .admin-actions-rapides > div { display: flex; align-items: center; gap: 7px; margin-right: auto; color: var(--texte-secondaire); font-size: 12px; font-weight: 700; }
 .admin-actions-rapides-point { width: 8px; height: 8px; border-radius: 50%; background: var(--vert); box-shadow: 0 0 0 4px var(--vert-clair); }
 
+.centre-controle { margin: 22px 0; padding: 22px; border: 1px solid var(--bordure); border-radius: 16px; background: rgba(255,255,255,0.88); box-shadow: var(--ombre-lg); }
+.centre-controle-entete { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 18px; }
+.centre-controle h2 { margin: 2px 0 4px; font-size: 21px; }
+.centre-controle-live { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 999px; background: var(--vert-clair); color: var(--vert); font-size: 11px; font-weight: 700; white-space: nowrap; }
+.centre-controle-live span { width: 7px; height: 7px; border-radius: 50%; background: var(--vert); animation: pulse-direct 1.6s ease infinite; }
+.centre-controle-outils { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--bordure); }
+.centre-controle-outils select { width: auto; min-width: 170px; min-height: 38px; margin: 0; padding: 8px 10px; font-size: 12px; }
+.centre-controle-navigation { display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 12px; }
+.centre-controle-legende { display: flex; gap: 14px; margin: 14px 0 10px; color: var(--texte-secondaire); font-size: 11px; }
+.centre-controle-legende span { display: inline-flex; align-items: center; gap: 5px; }
+.centre-controle-legende i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.controle-libre { background: var(--fond); border: 1px solid var(--bordure); }
+.controle-validee { background: var(--vert); }
+.controle-attente { background: var(--orange); }
+.controle-calendrier-scroll { overflow-x: auto; padding-bottom: 4px; }
+.controle-calendrier { display: grid; grid-template-columns: 190px repeat(5, minmax(150px, 1fr)); min-width: 950px; border: 1px solid var(--bordure); border-radius: 10px; overflow: hidden; }
+.controle-ressource-entete, .controle-jour-entete { padding: 10px 12px; background: var(--fond); border-bottom: 1px solid var(--bordure); font-size: 11px; color: var(--texte-secondaire); }
+.controle-jour-entete { border-left: 1px solid var(--bordure); text-align: center; }
+.controle-jour-entete strong { display: block; margin-top: 2px; color: var(--texte); font-size: 16px; }
+.controle-ligne { display: contents; }
+.controle-ressource { min-height: 144px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; padding: 10px 12px; border: none; border-top: 1px solid var(--bordure); border-radius: 0; background: rgba(255,255,255,0.7); text-align: left; }
+.controle-ressource span { color: var(--texte-discret); font-size: 10px; line-height: 1.3; }
+.controle-jour { display: grid; grid-template-rows: repeat(12, 1fr); min-height: 144px; border-left: 1px solid var(--bordure); border-top: 1px solid var(--bordure); background: rgba(248,251,255,0.62); }
+.controle-case { position: relative; min-height: 12px; border-bottom: 1px solid rgba(205,220,243,0.55); }
+.controle-case:last-child { border-bottom: none; }
+.controle-case::before { content: attr(data-heure); position: absolute; left: 4px; top: 1px; color: rgba(18,48,79,0.55); font-size: 8px; line-height: 1; }
+.controle-case-libre { background: rgba(238,245,255,0.45); }
+.controle-statut-Validee { background: var(--vert); }
+.controle-statut-EnAttente, .controle-statut-EnAttenteResponsable, .controle-statut-EnAttenteAdmin { background: var(--orange); }
+.controle-case span { position: absolute; z-index: 1; top: 1px; left: 24px; max-width: calc(100% - 28px); overflow: hidden; color: white; font-size: 9px; font-weight: 700; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+
 @media (max-width: 768px) {
   .accueil-indicateurs { grid-template-columns: 1fr; }
   .admin-actions-rapides { align-items: flex-start; flex-wrap: wrap; }
   .admin-actions-rapides > div { flex-basis: 100%; }
+  .centre-controle { padding: 16px; }
+  .centre-controle-entete { flex-direction: column; }
+  .centre-controle-navigation { margin-left: 0; }
 }
 
 /* ---------- Profil ---------- */
