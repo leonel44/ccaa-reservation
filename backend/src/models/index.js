@@ -20,6 +20,8 @@ const Resource = sequelize.define('Resource', {
   type: { type: DataTypes.ENUM('Salle', 'Equipement', 'Vehicule'), defaultValue: 'Salle' },
   capacite: { type: DataTypes.INTEGER, defaultValue: 0 },
   localisation: { type: DataTypes.STRING, allowNull: false },
+  photoUrl: { type: DataTypes.STRING, allowNull: true },
+  planUrl: { type: DataTypes.STRING, allowNull: true },
   necessiteValidationAdmin: { type: DataTypes.BOOLEAN, defaultValue: false },
   statutMaintenance: { type: DataTypes.ENUM('Disponible', 'Indisponible'), defaultValue: 'Disponible' },
   maintenanceDebut: { type: DataTypes.DATE, allowNull: true },

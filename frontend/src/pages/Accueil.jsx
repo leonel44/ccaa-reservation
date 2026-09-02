@@ -39,6 +39,7 @@ export default function Accueil() {
   const [ressources, setRessources] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState('');
   const [salleFavoriteId, setSalleFavoriteId] = useState(null);
   const [dernierRafraichissement, setDernierRafraichissement] = useState(new Date());
   const navigate = useNavigate();
@@ -58,7 +59,10 @@ export default function Accueil() {
     ]).then(([res, rsv]) => {
       setRessources(res);
       setReservations(rsv);
+      setErreur('');
       setDernierRafraichissement(new Date());
+    }).catch(() => {
+      setErreur('Les disponibilités sont momentanément indisponibles.');
     }).finally(() => setChargement(false));
   }
 
@@ -100,10 +104,22 @@ export default function Accueil() {
           </p>
           <h1 className="accueil-titre">Disponibilité maintenant</h1>
         </div>
-        <p className="texte-discret">Mis à jour {dernierRafraichissement.toLocaleTimeString('fr-FR')}</p>
+        <div className="accueil-actions">
+          <p className="texte-discret">Mis à jour {dernierRafraichissement.toLocaleTimeString('fr-FR')}</p>
+          <button className="bouton-secondaire bouton-rafraichir" onClick={() => recharger()} disabled={chargement}>
+            {chargement ? 'Actualisation...' : 'Actualiser'}
+          </button>
+        </div>
       </div>
 
       <RechercheDisponibilite />
+
+      {erreur && (
+        <div className="accueil-erreur" role="alert">
+          <span>{erreur}</span>
+          <button className="bouton-petit" onClick={() => recharger()}>Réessayer</button>
+        </div>
+      )}
 
       {!chargement && (
         <p className="accueil-resume">
@@ -123,7 +139,8 @@ export default function Accueil() {
             <button
               key={ressource.id}
               className={`carte-accueil ${statut.libre ? 'carte-accueil-libre' : 'carte-accueil-occupee'}`}
-              onClick={() => navigate('/reserver', { state: { resourceId: ressource.id } })}
+              onClick={() => navigate(`/ressources/${ressource.id}`)}
+              aria-label={`Voir le détail de ${ressource.nom}`}
             >
               <div className="carte-accueil-icone">{ICONES_TYPE[ressource.type] || '📍'}</div>
               <p className="carte-accueil-nom">{ressource.nom}</p>

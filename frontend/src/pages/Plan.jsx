@@ -230,6 +230,9 @@ export default function Plan() {
             <button className="bouton-primaire" style={{ width: '100%', marginTop: 14 }} onClick={() => navigate('/reserver', { state: { resourceId: salle.id } })}>
               Réserver cette salle
             </button>
+            <button className="bouton-secondaire" style={{ width: '100%', marginTop: 8 }} onClick={() => navigate(`/ressources/${salle.id}`)}>
+              Voir le détail
+            </button>
           </div>
         );
       })()}

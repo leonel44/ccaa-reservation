@@ -7,6 +7,7 @@ const Login = lazy(() => import('./pages/Login.jsx'));
 const Inscription = lazy(() => import('./pages/Inscription.jsx'));
 const Profil = lazy(() => import('./pages/Profil.jsx'));
 const Accueil = lazy(() => import('./pages/Accueil.jsx'));
+const DetailRessource = lazy(() => import('./pages/DetailRessource.jsx'));
 const Plan = lazy(() => import('./pages/Plan.jsx'));
 const Calendrier = lazy(() => import('./pages/Calendrier.jsx'));
 const FormulaireReservation = lazy(() => import('./pages/FormulaireReservation.jsx'));
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/profil" element={<RouteProtegee><Profil /></RouteProtegee>} />
 
         <Route path="/" element={<RouteProtegee><Accueil /></RouteProtegee>} />
+        <Route path="/ressources/:id" element={<RouteProtegee><DetailRessource /></RouteProtegee>} />
         <Route path="/plan" element={<RouteProtegee><Plan /></RouteProtegee>} />
         <Route path="/calendrier" element={<RouteProtegee><Calendrier /></RouteProtegee>} />
         <Route path="/reserver" element={<RouteProtegee><FormulaireReservation /></RouteProtegee>} />

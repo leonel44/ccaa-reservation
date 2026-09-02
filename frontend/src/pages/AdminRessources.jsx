@@ -3,7 +3,7 @@ import Layout from '../components/Layout.jsx';
 import { api } from '../api.js';
 import { useConfirm, useToast } from '../components/ToastContext.jsx';
 
-const VIDE = { nom: '', type: 'Salle', capacite: 0, localisation: '', necessiteValidationAdmin: false, statutMaintenance: 'Disponible', maintenanceDebut: '', maintenanceFin: '' };
+const VIDE = { nom: '', type: 'Salle', capacite: 0, localisation: '', photoUrl: '', planUrl: '', necessiteValidationAdmin: false, statutMaintenance: 'Disponible', maintenanceDebut: '', maintenanceFin: '' };
 function formulaireVide() { return { ...VIDE }; }
 
 export default function AdminRessources() {
@@ -132,6 +132,12 @@ export default function AdminRessources() {
 
               <label>Localisation</label>
               <input value={form.localisation} onChange={(e) => setForm({ ...form, localisation: e.target.value })} required />
+
+              <label>URL de la photo</label>
+              <input type="url" placeholder="https://..." value={form.photoUrl || ''} onChange={(e) => setForm({ ...form, photoUrl: e.target.value })} />
+
+              <label>URL du plan</label>
+              <input type="url" placeholder="https://..." value={form.planUrl || ''} onChange={(e) => setForm({ ...form, planUrl: e.target.value })} />
 
               <label className="case-a-cocher">
                 <input type="checkbox" checked={form.necessiteValidationAdmin} onChange={(e) => setForm({ ...form, necessiteValidationAdmin: e.target.checked })} />
