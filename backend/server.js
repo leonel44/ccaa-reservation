@@ -18,8 +18,10 @@ const estTiDB = (process.env.DB_HOST || '').includes('tidbcloud.com');
 
 async function mettreAJourSchemaRessources() {
   const queryInterface = sequelize.getQueryInterface();
-  const colonnes = await queryInterface.describeTable('resources');
-  const nomsColonnes = new Set(Object.keys(colonnes));
+  const [lignes] = await sequelize.query(
+    "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'resources'"
+  );
+  const nomsColonnes = new Set(lignes.map((ligne) => String(ligne.COLUMN_NAME).toLowerCase()));
   const nouvellesColonnes = {
     statutMaintenance: {
       type: DataTypes.ENUM('Disponible', 'Indisponible'),
@@ -33,7 +35,14 @@ async function mettreAJourSchemaRessources() {
   };
 
   for (const [nom, definition] of Object.entries(nouvellesColonnes)) {
-    if (!nomsColonnes.has(nom)) await queryInterface.addColumn('resources', nom, definition);
+    if (nomsColonnes.has(nom.toLowerCase())) continue;
+    try {
+      await queryInterface.addColumn('resources', nom, definition);
+      nomsColonnes.add(nom.toLowerCase());
+    } catch (err) {
+      // MySQL/TiDB comparent les noms de colonnes sans tenir compte de la casse.
+      if (err.original?.code !== 'ER_DUP_FIELDNAME' && err.parent?.code !== 'ER_DUP_FIELDNAME') throw err;
+    }
   }
 }
 
