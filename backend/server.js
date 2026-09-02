@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const { createApp } = require('./src/app');
 const { sequelize } = require('./src/models');
+const { DataTypes } = require('sequelize');
 const { initialiser } = require('./src/config/seed');
 const noShowJob = require('./src/jobs/liberationAbsence');
 const rappelJob = require('./src/jobs/rappelReunion');
@@ -15,6 +16,27 @@ const PORT = Number(process.env.PORT || 4000);
 // (CREATE TABLE) n'est pas concernée par cette limitation.
 const estTiDB = (process.env.DB_HOST || '').includes('tidbcloud.com');
 
+async function mettreAJourSchemaRessources() {
+  const queryInterface = sequelize.getQueryInterface();
+  const colonnes = await queryInterface.describeTable('resources');
+  const nomsColonnes = new Set(Object.keys(colonnes).map((nom) => nom.toLowerCase()));
+  const nouvellesColonnes = {
+    statutMaintenance: {
+      type: DataTypes.ENUM('Disponible', 'Indisponible'),
+      allowNull: false,
+      defaultValue: 'Disponible',
+    },
+    maintenanceDebut: { type: DataTypes.DATE, allowNull: true },
+    maintenanceFin: { type: DataTypes.DATE, allowNull: true },
+    photoUrl: { type: DataTypes.STRING, allowNull: true },
+    planUrl: { type: DataTypes.STRING, allowNull: true },
+  };
+
+  for (const [nom, definition] of Object.entries(nouvellesColonnes)) {
+    if (!nomsColonnes.has(nom.toLowerCase())) await queryInterface.addColumn('resources', nom, definition);
+  }
+}
+
 async function demarrer() {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.trim() === '' || process.env.JWT_SECRET === 'change-this-secret-key-in-production') {
     throw new Error('JWT_SECRET est manquant ou non sécurisé. Configure un secret fort dans le fichier .env.');
@@ -22,6 +44,8 @@ async function demarrer() {
 
   await sequelize.authenticate();
   await sequelize.sync(estTiDB ? {} : { alter: true });
+  // TiDB ne permet pas le mode alter utilisé en local : appliquer les ajouts explicitement.
+  if (estTiDB) await mettreAJourSchemaRessources();
   await initialiser();
   noShowJob.demarrer();
   rappelJob.demarrer();
