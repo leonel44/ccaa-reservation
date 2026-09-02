@@ -19,7 +19,7 @@ const estTiDB = (process.env.DB_HOST || '').includes('tidbcloud.com');
 async function mettreAJourSchemaRessources() {
   const queryInterface = sequelize.getQueryInterface();
   const colonnes = await queryInterface.describeTable('resources');
-  const nomsColonnes = new Set(Object.keys(colonnes).map((nom) => nom.toLowerCase()));
+  const nomsColonnes = new Set(Object.keys(colonnes));
   const nouvellesColonnes = {
     statutMaintenance: {
       type: DataTypes.ENUM('Disponible', 'Indisponible'),
@@ -28,12 +28,12 @@ async function mettreAJourSchemaRessources() {
     },
     maintenanceDebut: { type: DataTypes.DATE, allowNull: true },
     maintenanceFin: { type: DataTypes.DATE, allowNull: true },
-    photoUrl: { type: DataTypes.STRING, allowNull: true },
-    planUrl: { type: DataTypes.STRING, allowNull: true },
+    photourl: { type: DataTypes.STRING, allowNull: true },
+    planurl: { type: DataTypes.STRING, allowNull: true },
   };
 
   for (const [nom, definition] of Object.entries(nouvellesColonnes)) {
-    if (!nomsColonnes.has(nom.toLowerCase())) await queryInterface.addColumn('resources', nom, definition);
+    if (!nomsColonnes.has(nom)) await queryInterface.addColumn('resources', nom, definition);
   }
 }
 

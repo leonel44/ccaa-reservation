@@ -30,6 +30,8 @@ function createApp() {
   const app = express();
 
   app.disable('x-powered-by');
+  // Render transmet l'adresse client dans X-Forwarded-For.
+  app.set('trust proxy', 1);
   app.use(compression({ level: 6, threshold: 1024 }));
   app.use(
     helmet({
