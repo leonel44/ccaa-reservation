@@ -553,6 +553,9 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .ligne-demande { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--bordure); flex-wrap: wrap; gap: 8px; }
 .ligne-demande:last-child { border-bottom: none; }
 .actions-ligne { display: flex; gap: 6px; }
+.ressource-table-identite { display: inline-flex; align-items: center; gap: 10px; padding: 4px 6px; border: none; background: transparent; color: var(--texte); font-weight: 700; text-align: left; }
+.ressource-table-identite:hover { background: var(--bleu-clair); }
+.ressource-table-identite img { width: 46px; height: 38px; border-radius: 7px; object-fit: cover; border: 1px solid var(--bordure); }
 
 .barre-stat { margin-bottom: 14px; }
 .barre-stat-entete { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 5px; }

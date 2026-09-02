@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import { api } from '../api.js';
 import { useConfirm, useToast } from '../components/ToastContext.jsx';
+import logo from '../assets/logo-ccaa.jpg';
 
 const VIDE = { nom: '', type: 'Salle', capacite: 0, localisation: '', photoUrl: '', planUrl: '', necessiteValidationAdmin: false, statutMaintenance: 'Disponible', maintenanceDebut: '', maintenanceFin: '' };
+const IMAGES_PAR_DEFAUT = { 'Salle de conférence': '/images/salle-conference.avif' };
 function formulaireVide() { return { ...VIDE }; }
 
 export default function AdminRessources() {
@@ -15,6 +18,7 @@ export default function AdminRessources() {
   const [form, setForm] = useState(VIDE);
   const demanderConfirmation = useConfirm();
   const notifier = useToast();
+  const navigate = useNavigate();
 
   function recharger() {
     setChargement(true);
@@ -85,12 +89,17 @@ export default function AdminRessources() {
       <div className="panneau tableau-conteneur">
         <table className="table-donnees">
           <thead>
-            <tr><th>Nom</th><th>Type</th><th>Capacité</th><th>Localisation</th><th>Validation admin</th><th>Maintenance</th><th></th></tr>
+            <tr><th>Ressource</th><th>Type</th><th>Capacité</th><th>Localisation</th><th>Validation admin</th><th>Maintenance</th><th></th></tr>
           </thead>
           <tbody>
             {ressourcesFiltrees.map((r) => (
               <tr key={r.id}>
-                <td>{r.nom}</td>
+                <td>
+                  <button className="ressource-table-identite" onClick={() => navigate(`/ressources/${r.id}`)}>
+                    <img src={r.photoUrl || IMAGES_PAR_DEFAUT[r.nom] || logo} alt="" />
+                    <span>{r.nom}</span>
+                  </button>
+                </td>
                 <td>{r.type}</td>
                 <td>{r.capacite || '—'}</td>
                 <td>{r.localisation}</td>
