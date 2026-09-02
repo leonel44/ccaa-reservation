@@ -6,6 +6,7 @@ import logo from '../assets/logo-ccaa.jpg';
 
 const STATUTS_ACTIFS = ['Validee', 'EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'];
 const ICONES_TYPE = { Salle: '🏛️', Equipement: '🎥', Vehicule: '🚗' };
+const IMAGES_PAR_DEFAUT = { 'Salle de conférence': '/images/salle-conference.avif' };
 
 function formatDate(date) {
   return new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -62,8 +63,8 @@ export default function DetailRessource() {
     );
   }
 
-  const media = ressource.photoUrl || ressource.planUrl;
-  const estPhoto = Boolean(ressource.photoUrl);
+  const media = ressource.photoUrl || ressource.planUrl || IMAGES_PAR_DEFAUT[ressource.nom];
+  const estPhoto = Boolean(ressource.photoUrl || IMAGES_PAR_DEFAUT[ressource.nom]);
   const indisponible = ressource.statutMaintenance === 'Indisponible';
 
   return (

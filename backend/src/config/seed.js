@@ -8,7 +8,7 @@ async function initialiser() {
   const administration = await Service.create({ nom: 'Administration (par défaut)', niveauPriorite: 3 });
 
   await Resource.bulkCreate([
-    { nom: 'Salle de conférence', type: 'Salle', capacite: 30, localisation: 'Siège CCAA, Yaoundé — Rez-de-chaussée', necessiteValidationAdmin: true },
+    { nom: 'Salle de conférence', type: 'Salle', capacite: 30, localisation: 'Siège CCAA, Yaoundé — Rez-de-chaussée', photoUrl: '/images/salle-conference.avif', necessiteValidationAdmin: true },
     { nom: 'Salle de réunion A', type: 'Salle', capacite: 12, localisation: 'Siège CCAA, Yaoundé — 1er étage' },
     { nom: 'Salle de réunion B', type: 'Salle', capacite: 8, localisation: 'Siège CCAA, Yaoundé — 1er étage' },
     { nom: 'Vidéoprojecteur mobile', type: 'Equipement', capacite: 0, localisation: 'Magasin matériel' },
