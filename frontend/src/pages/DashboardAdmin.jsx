@@ -6,7 +6,6 @@ import { useToast } from '../components/ToastContext.jsx';
 
 const HEURES_CONTROLE = Array.from({ length: 12 }, (_, index) => index + 7);
 const JOURS_CONTROLE = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven'];
-const STATUTS_ACTIFS = ['Validee', 'EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'];
 
 function debutSemaine(date) {
   const resultat = new Date(date);
@@ -16,13 +15,13 @@ function debutSemaine(date) {
   return resultat;
 }
 
-function memeJour(dateA, dateB) { return dateA.toDateString() === dateB.toDateString(); }
-
 export default function DashboardAdmin() {
   const [stats, setStats] = useState(null);
   const [enAttente, setEnAttente] = useState([]);
   const [ressources, setRessources] = useState([]);
   const [reservationsCalendrier, setReservationsCalendrier] = useState([]);
+  const [chargementCalendrier, setChargementCalendrier] = useState(true);
+  const [dernierRafraichissement, setDernierRafraichissement] = useState(new Date());
   const [semaineControle, setSemaineControle] = useState(() => debutSemaine(new Date()));
   const [filtreRessource, setFiltreRessource] = useState('Toutes');
   const [filtreStatut, setFiltreStatut] = useState('Tous');
@@ -36,8 +35,7 @@ export default function DashboardAdmin() {
       api.getStatsDashboard().then(setStats),
       api.getReservations().then((data) => setEnAttente(data.filter((r) => r.statut === 'EnAttente' || r.statut === 'EnAttenteAdmin'))),
       api.getResources().then(setRessources),
-      api.getReservations({ depuis: new Date().toISOString(), jusqua: new Date(Date.now() + 7 * 24 * 3600000).toISOString() }).then(setReservationsCalendrier),
-    ]).finally(() => setChargement(false));
+    ]).then(() => setDernierRafraichissement(new Date())).finally(() => setChargement(false));
   }
 
   useEffect(() => {
@@ -45,6 +43,16 @@ export default function DashboardAdmin() {
     const intervalle = setInterval(() => recharger(true), 15000);
     return () => clearInterval(intervalle);
   }, []);
+
+  useEffect(() => {
+    const fin = new Date(semaineControle);
+    fin.setDate(fin.getDate() + 7);
+    setChargementCalendrier(true);
+    api.getReservations({ depuis: semaineControle.toISOString(), jusqua: fin.toISOString() })
+      .then(setReservationsCalendrier)
+      .catch(() => setReservationsCalendrier([]))
+      .finally(() => setChargementCalendrier(false));
+  }, [semaineControle]);
 
   async function valider(id) { await api.validerReservation(id); notifier('Réservation validée.', 'succes'); recharger(true); }
   async function rejeter(id) { await api.rejeterReservation(id); notifier('Réservation rejetée.', 'attention'); recharger(true); }
@@ -73,13 +81,20 @@ export default function DashboardAdmin() {
   const ressourcesControle = useMemo(() => ressources.filter((ressource) => filtreRessource === 'Toutes' || String(ressource.id) === filtreRessource), [ressources, filtreRessource]);
   const joursControle = useMemo(() => Array.from({ length: 5 }, (_, index) => { const jour = new Date(semaineControle); jour.setDate(jour.getDate() + index); return jour; }), [semaineControle]);
   const reservationsControle = useMemo(() => reservationsCalendrier.filter((reservation) => filtreStatut === 'Tous' || reservation.statut === filtreStatut), [reservationsCalendrier, filtreStatut]);
-
-  function reservationPour(ressourceId, jour, heure) {
-    return reservationsControle.find((reservation) => {
+  const indexReservations = useMemo(() => {
+    const index = new Map();
+    reservationsControle.forEach((reservation) => {
       const debut = new Date(reservation.dateDebut);
       const fin = new Date(reservation.dateFin);
-      return reservation.resourceId === ressourceId && memeJour(debut, jour) && debut.getHours() <= heure && fin.getHours() > heure;
+      for (let heure = debut.getHours(); heure < fin.getHours(); heure += 1) {
+        index.set(`${reservation.resourceId}-${debut.toDateString()}-${heure}`, reservation);
+      }
     });
+    return index;
+  }, [reservationsControle]);
+
+  function reservationPour(ressourceId, jour, heure) {
+    return indexReservations.get(`${ressourceId}-${jour.toDateString()}-${heure}`);
   }
 
   function naviguerSemaine(delta) {
@@ -154,7 +169,7 @@ export default function DashboardAdmin() {
             <h2>Centre de contrôle</h2>
             <p className="texte-discret">Visualisez l’utilisation de chaque ressource, du lundi au vendredi, de 7h à 19h.</p>
           </div>
-          <div className="centre-controle-live"><span /> Actualisé automatiquement toutes les 15 secondes</div>
+          <div className="centre-controle-live"><span /> En direct · mis à jour à {dernierRafraichissement.toLocaleTimeString('fr-FR')}</div>
         </div>
         <div className="centre-controle-outils">
           <select value={filtreRessource} onChange={(e) => setFiltreRessource(e.target.value)}>
@@ -178,7 +193,7 @@ export default function DashboardAdmin() {
         <div className="centre-controle-legende">
           <span><i className="controle-libre" /> Libre</span><span><i className="controle-validee" /> Validée</span><span><i className="controle-attente" /> En attente</span>
         </div>
-        <div className="controle-calendrier-scroll">
+        <div className={`controle-calendrier-scroll ${chargementCalendrier ? 'controle-calendrier-chargement' : ''}`}>
           <div className="controle-calendrier">
             <div className="controle-ressource-entete">Ressource</div>
             {joursControle.map((jour, index) => <div className="controle-jour-entete" key={jour.toISOString()}>{JOURS_CONTROLE[index]}<strong>{jour.getDate()}</strong></div>)}
@@ -190,7 +205,8 @@ export default function DashboardAdmin() {
             ))}
           </div>
         </div>
-        {!ressourcesControle.length && <p className="texte-discret">Aucune ressource ne correspond à ce filtre.</p>}
+        {chargementCalendrier && <p className="controle-calendrier-message">Actualisation de l’occupation...</p>}
+        {!chargementCalendrier && !ressourcesControle.length && <p className="texte-discret">Aucune ressource ne correspond à ce filtre.</p>}
       </section>
 
       <div className="grille-deux-colonnes">
