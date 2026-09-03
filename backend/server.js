@@ -6,6 +6,7 @@ const { DataTypes } = require('sequelize');
 const { initialiser } = require('./src/config/seed');
 const noShowJob = require('./src/jobs/liberationAbsence');
 const rappelJob = require('./src/jobs/rappelReunion');
+const { verifierConnexionSMTP } = require('./src/utils/mail');
 
 const app = createApp();
 const PORT = Number(process.env.PORT || 4000);
@@ -67,6 +68,8 @@ async function demarrer() {
   await initialiser();
   noShowJob.demarrer();
   rappelJob.demarrer();
+  const smtp = await verifierConnexionSMTP();
+  console.log(`SMTP : ${smtp.message}`);
 
   app.listen(PORT, () => console.log(`API disponible sur http://localhost:${PORT}`));
 }
