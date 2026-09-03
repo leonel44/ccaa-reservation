@@ -34,7 +34,7 @@ test('auth: POST /api/auth/login — reject invalid email format', async () => {
   const response = await fetch(`${BASE_URL}:${port}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'user@invalid.com', motDePasse: 'Passer123!' }),
+    body: JSON.stringify({ email: 'user-invalide', motDePasse: 'Passer123!' }),
   });
   assert.equal(response.status, 400);
   const data = await response.json();
@@ -50,21 +50,21 @@ test('auth: POST /api/auth/login — reject short password', async () => {
   assert.equal(response.status, 400);
 });
 
-test('auth: POST /api/auth/register — reject non-CCAA email', async () => {
+test('auth: POST /api/auth/register — reject invalid email format', async () => {
   const response = await fetch(`${BASE_URL}:${port}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       nom: 'Test',
       prenom: 'User',
-      email: 'user@gmail.com',
+      email: 'user-invalide',
       motDePasse: 'Secure1234!',
       serviceId: 1,
     }),
   });
   assert.equal(response.status, 400);
   const data = await response.json();
-  assert.match(data.message, /ccaa/i);
+  assert.match(data.message, /email invalide/i);
 });
 
 test('auth: POST /api/auth/register — reject short password', async () => {

@@ -65,11 +65,11 @@ export default function Inscription() {
             </div>
           </div>
 
-          <label>Email professionnel</label>
+          <label>Adresse email</label>
           <input
             type="email"
-            placeholder="prenom.nom@ccaa.cm ou prenom.nom@ccaa.aero"
-            title="Utilisez une adresse @ccaa.cm ou @ccaa.aero"
+            placeholder="prenom.nom@gmail.com"
+            title="Saisissez une adresse email valide"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value.trim().toLowerCase() })}
             required

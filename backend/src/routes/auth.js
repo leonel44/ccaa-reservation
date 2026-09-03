@@ -5,7 +5,7 @@ const { creerToken } = require('../utils/token');
 const { verifierToken } = require('../middleware/auth');
 
 function validerEmail(value) {
-  return typeof value === 'string' && /^[^\s@]+@ccaa\.(cm|aero)$/i.test(value.trim());
+  return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(value.trim());
 }
 
 function validerMotDePasse(value) {
@@ -48,7 +48,7 @@ router.post('/register', async (req, res) => {
   const emailNormalise = String(email || '').trim().toLowerCase();
 
   if (!validerEmail(emailNormalise)) {
-    return res.status(400).json({ message: "L'inscription est réservée aux adresses @ccaa.cm et @ccaa.aero." });
+    return res.status(400).json({ message: 'Adresse email invalide.' });
   }
   if (!validerMotDePasse(motDePasse)) {
     return res.status(400).json({ message: 'Le mot de passe doit contenir au moins 8 caractères.' });
