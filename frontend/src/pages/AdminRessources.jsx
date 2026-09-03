@@ -146,8 +146,26 @@ export default function AdminRessources() {
               <label>Localisation</label>
               <input value={form.localisation} onChange={(e) => setForm({ ...form, localisation: e.target.value })} required />
 
-              <label>URL de la photo</label>
-              <input type="url" placeholder="https://..." value={form.photoUrl || ''} onChange={(e) => setForm({ ...form, photoUrl: e.target.value })} />
+              <label htmlFor="photo-ressource">Image de la salle</label>
+              <input
+                id="photo-ressource"
+                type="url"
+                placeholder="Collez ici l’URL de l’image (https://...)"
+                value={form.photoUrl || ''}
+                onChange={(e) => setForm({ ...form, photoUrl: e.target.value })}
+              />
+              <p className="texte-discret" style={{ marginTop: 6, marginBottom: 10 }}>
+                Copiez l’adresse de l’image depuis votre navigateur, puis collez-la ici.
+              </p>
+              {form.photoUrl && (
+                <div style={{ marginBottom: 14 }}>
+                  <img
+                    src={form.photoUrl}
+                    alt="Aperçu de la salle"
+                    style={{ display: 'block', width: '100%', maxHeight: 150, objectFit: 'cover', borderRadius: 10 }}
+                  />
+                </div>
+              )}
 
               <label>URL du plan</label>
               <input type="url" placeholder="https://..." value={form.planUrl || ''} onChange={(e) => setForm({ ...form, planUrl: e.target.value })} />
