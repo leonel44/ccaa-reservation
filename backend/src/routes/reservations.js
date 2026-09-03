@@ -177,7 +177,14 @@ router.patch('/:id/valider', reserverAuxAdmins, async (req, res) => {
   reservation.statut = 'Validee';
   await reservation.save();
   await JournalAction.create({ utilisateurId: req.utilisateur.sub, action: 'RESERVATION_VALIDEE', details: `Réservation #${reservation.id} validée.` });
-  await Notification.create({ utilisateurId: reservation.utilisateurId, type: 'succes', message: `Ta réservation du ${new Date(reservation.dateDebut).toLocaleString('fr-FR')} a été validée.` });
+  const messageValidation = `Ta réservation du ${new Date(reservation.dateDebut).toLocaleString('fr-FR')} dans ${reservation.Resource?.nom || 'la ressource'} a été validée.`;
+  await Notification.create({ utilisateurId: reservation.utilisateurId, type: 'succes', message: messageValidation });
+  await envoyerMailConfirmation({
+    email: reservation.User?.email,
+    sujet: 'Réservation validée - CCAA',
+    texte: messageValidation,
+    html: `<p>${messageValidation}</p>`,
+  });
   res.status(204).end();
 });
 
@@ -195,9 +202,15 @@ router.patch('/:id/valider-responsable', reserverAuxResponsables, async (req, re
   reservation.statut = reservation.Resource.necessiteValidationAdmin ? 'EnAttenteAdmin' : 'Validee';
   await reservation.save();
   await JournalAction.create({ utilisateurId: req.utilisateur.sub, action: 'RESERVATION_VALIDEE_RESPONSABLE', details: `Réservation #${reservation.id} validée par le responsable.` });
-  await Notification.create({ utilisateurId: reservation.utilisateurId, type: 'succes', message: reservation.statut === 'Validee'
+  const messageValidation = reservation.statut === 'Validee'
       ? `Ta réservation du ${new Date(reservation.dateDebut).toLocaleString('fr-FR')} a été validée par ton responsable.`
-      : `Ta réservation du ${new Date(reservation.dateDebut).toLocaleString('fr-FR')} a été approuvée par ton responsable et attend maintenant la validation administrateur.`
+      : `Ta réservation du ${new Date(reservation.dateDebut).toLocaleString('fr-FR')} a été approuvée par ton responsable et attend maintenant la validation administrateur.`;
+  await Notification.create({ utilisateurId: reservation.utilisateurId, type: 'succes', message: messageValidation });
+  await envoyerMailConfirmation({
+    email: reservation.User?.email,
+    sujet: reservation.statut === 'Validee' ? 'Réservation validée - CCAA' : 'Réservation en attente de validation admin - CCAA',
+    texte: messageValidation,
+    html: `<p>${messageValidation}</p>`,
   });
 
   if (reservation.statut === 'EnAttenteAdmin') {
@@ -213,12 +226,14 @@ router.patch('/:id/valider-responsable', reserverAuxResponsables, async (req, re
 });
 
 router.patch('/:id/rejeter', reserverAuxAdmins, async (req, res) => {
-  const reservation = await Reservation.findByPk(req.params.id);
+  const reservation = await Reservation.findByPk(req.params.id, { include: [Resource, User] });
   if (!reservation) return res.status(404).end();
   reservation.statut = 'Rejetee';
   await reservation.save();
   await JournalAction.create({ utilisateurId: req.utilisateur.sub, action: 'RESERVATION_REJETEE', details: `Réservation #${reservation.id} rejetée.` });
-  await Notification.create({ utilisateurId: reservation.utilisateurId, type: 'erreur', message: `Ta réservation du ${new Date(reservation.dateDebut).toLocaleString('fr-FR')} a été rejetée.` });
+  const messageRejet = `Ta réservation du ${new Date(reservation.dateDebut).toLocaleString('fr-FR')} dans ${reservation.Resource?.nom || 'la ressource'} a été rejetée.`;
+  await Notification.create({ utilisateurId: reservation.utilisateurId, type: 'erreur', message: messageRejet });
+  await envoyerMailConfirmation({ email: reservation.User?.email, sujet: 'Réservation rejetée - CCAA', texte: messageRejet, html: `<p>${messageRejet}</p>` });
   await notifierListeAttente(reservation.resourceId, reservation.dateDebut, reservation.dateFin);
   res.status(204).end();
 });
@@ -236,7 +251,9 @@ router.patch('/:id/rejeter-responsable', reserverAuxResponsables, async (req, re
   reservation.statut = 'Rejetee';
   await reservation.save();
   await JournalAction.create({ utilisateurId: req.utilisateur.sub, action: 'RESERVATION_REJETEE_RESPONSABLE', details: `Réservation #${reservation.id} rejetée par le responsable.` });
-  await Notification.create({ utilisateurId: reservation.utilisateurId, type: 'erreur', message: `Ta réservation du ${new Date(reservation.dateDebut).toLocaleString('fr-FR')} a été rejetée par ton responsable.` });
+  const messageRejet = `Ta réservation du ${new Date(reservation.dateDebut).toLocaleString('fr-FR')} a été rejetée par ton responsable.`;
+  await Notification.create({ utilisateurId: reservation.utilisateurId, type: 'erreur', message: messageRejet });
+  await envoyerMailConfirmation({ email: reservation.User?.email, sujet: 'Réservation rejetée - CCAA', texte: messageRejet, html: `<p>${messageRejet}</p>` });
   await notifierListeAttente(reservation.resourceId, reservation.dateDebut, reservation.dateFin);
   res.status(204).end();
 });

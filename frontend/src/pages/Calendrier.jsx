@@ -38,8 +38,8 @@ export default function Calendrier() {
   const navigate = useNavigate();
 
   const jours = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => { const d = new Date(semaine); d.setDate(d.getDate() + i); return d; }),
-    [semaine]
+    () => Array.from({ length: vue === 'jour' ? 1 : 7 }, (_, i) => { const d = new Date(semaine); d.setDate(d.getDate() + i); return d; }),
+    [semaine, vue]
   );
 
   const ressourcesFiltrees = useMemo(() => {
@@ -69,7 +69,7 @@ export default function Calendrier() {
 
   useEffect(() => {
     if (!ressourceSelectionnee) return;
-    const fin = new Date(semaine); fin.setDate(fin.getDate() + (vue === 'mois' ? 42 : 7));
+    const fin = new Date(semaine); fin.setDate(fin.getDate() + (vue === 'mois' ? 42 : vue === 'jour' ? 1 : 7));
     const params = { depuis: semaine.toISOString(), jusqua: fin.toISOString() };
     if (uniquementMesReservations) params.mesReservations = true;
     api.getReservations(params).then(setReservations).catch(() => setReservations([]));
@@ -90,6 +90,7 @@ export default function Calendrier() {
     setSemaine((date) => {
       const suivante = new Date(date);
       if (vue === 'mois') suivante.setMonth(suivante.getMonth() + delta);
+      else if (vue === 'jour') suivante.setDate(suivante.getDate() + delta);
       else suivante.setDate(suivante.getDate() + delta * 7);
       return vue === 'mois' ? debutSemaine(new Date(suivante.getFullYear(), suivante.getMonth(), 1)) : suivante;
     });
@@ -156,6 +157,7 @@ export default function Calendrier() {
           </select>
           <label className="cal-filtre-case"><input type="checkbox" checked={uniquementMesReservations} onChange={(e) => setUniquementMesReservations(e.target.checked)} /> Mes réservations</label>
           <div className="cal-vues">
+            <button className={vue === 'jour' ? 'bouton-primaire' : 'bouton-secondaire'} onClick={() => setVue('jour')}>Jour</button>
             <button className={vue === 'semaine' ? 'bouton-primaire' : 'bouton-secondaire'} onClick={() => setVue('semaine')}>Semaine</button>
             <button className={vue === 'mois' ? 'bouton-primaire' : 'bouton-secondaire'} onClick={() => setVue('mois')}>Mois</button>
           </div>
@@ -169,8 +171,8 @@ export default function Calendrier() {
 
       {chargementRessources && <div className="squelette" style={{ height: 400 }} />}
 
-      {!chargementRessources && vue === 'semaine' && (
-        <div className="calendrier-grille" onMouseUp={terminerGlisse} onMouseLeave={() => (enTrainDeGlisser.current = false)}>
+      {!chargementRessources && (vue === 'semaine' || vue === 'jour') && (
+        <div className="calendrier-grille" style={{ gridTemplateColumns: `50px repeat(${jours.length}, minmax(100px, 1fr))` }} onMouseUp={terminerGlisse} onMouseLeave={() => (enTrainDeGlisser.current = false)}>
           <div className="cal-entete-vide" />
           {jours.map((j, i) => <div key={i} className="cal-jour-entete">{JOURS_LABEL[i]} {j.getDate()}/{j.getMonth() + 1}</div>)}
 

@@ -24,13 +24,18 @@ async function envoyerMailConfirmation({ email, sujet, html, texte }) {
     return { envoye: false, raison: 'SMTP non configuré' };
   }
 
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
-    to: email,
-    subject: sujet,
-    text: texte,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: email,
+      subject: sujet,
+      text: texte,
+      html,
+    });
+  } catch (err) {
+    console.error('Erreur envoi email :', err.message);
+    return { envoye: false, raison: 'Erreur SMTP' };
+  }
 
   return { envoye: true };
 }

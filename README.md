@@ -27,6 +27,13 @@ npm start
 Ajuste `.env` si ton MySQL a un utilisateur/mot de passe différent de `root` sans mot de
 passe. Le serveur écoute par défaut sur le port 4000.
 
+### Notifications email
+Pour activer les emails de confirmation, validation, rejet, rappel et liste d'attente,
+complète ces variables dans `backend/.env` avec les identifiants de ton fournisseur SMTP :
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` et `SMTP_FROM`. Si SMTP n'est pas
+configuré, les notifications restent disponibles dans l'application et les réservations
+continuent de fonctionner.
+
 Comptes créés automatiquement au premier démarrage :
 - admin@ccaa.cm / Passer123!
 - employe@ccaa.cm / Passer123!
