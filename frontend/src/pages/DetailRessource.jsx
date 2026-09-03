@@ -67,8 +67,9 @@ export default function DetailRessource() {
     );
   }
 
-  const media = ressource.photoUrl || ressource.planUrl || IMAGES_PAR_DEFAUT[ressource.nom];
-  const estPhoto = Boolean(ressource.photoUrl || IMAGES_PAR_DEFAUT[ressource.nom]);
+  const imageParDefaut = IMAGES_PAR_DEFAUT[ressource.nom];
+  const media = imageParDefaut || ressource.photoUrl || ressource.planUrl;
+  const estPhoto = Boolean(imageParDefaut || ressource.photoUrl);
   const indisponible = ressource.statutMaintenance === 'Indisponible';
 
   return (

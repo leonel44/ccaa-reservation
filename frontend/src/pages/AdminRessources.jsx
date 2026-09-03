@@ -100,7 +100,7 @@ export default function AdminRessources() {
               <tr key={r.id}>
                 <td>
                   <button className="ressource-table-identite" onClick={() => navigate(`/ressources/${r.id}`)}>
-                    <img src={r.photoUrl || IMAGES_PAR_DEFAUT[r.nom] || logo} alt="" />
+                    <img src={IMAGES_PAR_DEFAUT[r.nom] || r.photoUrl || logo} alt="" />
                     <span>{r.nom}</span>
                   </button>
                 </td>
