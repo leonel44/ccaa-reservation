@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Salle de reunion B</title>
+  <desc id="desc">Illustration d'une petite salle de reunion moderne</desc>
+  <defs>
+    <linearGradient id="back" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#fff0dc"/>
+      <stop offset="1" stop-color="#f7d6b4"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#d8b58d"/>
+      <stop offset="1" stop-color="#b98e65"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#back)"/>
+  <rect y="560" width="1200" height="240" fill="url(#ground)"/>
+  <rect x="100" y="105" width="1000" height="24" rx="12" fill="#bc7552"/>
+  <rect x="120" y="170" width="340" height="245" rx="10" fill="#fffaf1" stroke="#d08a62" stroke-width="12"/>
+  <path d="M290 170v245M120 292h340" stroke="#d08a62" stroke-width="10"/>
+  <rect x="745" y="175" width="300" height="190" rx="12" fill="#324c53"/>
+  <rect x="770" y="200" width="250" height="140" fill="#83b9b4"/>
+  <path d="M890 365v75M825 440h130" stroke="#324c53" stroke-width="16"/>
+  <ellipse cx="575" cy="555" rx="265" ry="58" fill="#6b4935"/>
+  <ellipse cx="575" cy="535" rx="265" ry="54" fill="#8f6245"/>
+  <path d="M410 560l-36 200M740 560l36 200" stroke="#503a31" stroke-width="22"/>
+  <g fill="#3f6f73"><rect x="340" y="470" width="70" height="65" rx="18"/><rect x="740" y="470" width="70" height="65" rx="18"/></g>
+  <g fill="#d35f49"><circle cx="485" cy="515" r="21"/><circle cx="575" cy="515" r="21"/><circle cx="665" cy="515" r="21"/></g>
+  <rect x="955" y="430" width="100" height="130" fill="#c77e4d"/><path d="M980 430v-75M1030 430v-75" stroke="#4c795b" stroke-width="18"/><circle cx="1005" cy="330" r="54" fill="#6ba36f"/>
+</svg>
