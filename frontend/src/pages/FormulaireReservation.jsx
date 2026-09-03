@@ -15,6 +15,29 @@ function formatHeure(heure) {
   return heure.slice(0, 5);
 }
 
+const STATUTS_BLOQUANTS = ['Validee', 'EnAttente', 'EnAttenteResponsable', 'EnAttenteAdmin'];
+
+function genererCreneaux(date, reservations) {
+  const maintenant = new Date();
+  const dateChoisie = new Date(`${date}T00:00:00`);
+  if (dateChoisie.getDay() === 0 || dateChoisie.getDay() === 6) return [];
+
+  return Array.from({ length: 12 }, (_, index) => {
+    const heureDebut = 7 + index;
+    const debut = new Date(`${date}T${String(heureDebut).padStart(2, '0')}:00`);
+    const fin = new Date(debut.getTime() + 3600000);
+    const occupe = reservations.some((reservation) => {
+      if (!STATUTS_BLOQUANTS.includes(reservation.statut)) return false;
+      return new Date(reservation.dateDebut) < fin && new Date(reservation.dateFin) > debut;
+    });
+    return {
+      heureDebut: `${String(heureDebut).padStart(2, '0')}:00`,
+      heureFin: `${String(heureDebut + 1).padStart(2, '0')}:00`,
+      disponible: !occupe && debut > maintenant,
+    };
+  }).filter((creneau) => creneau.disponible);
+}
+
 export default function FormulaireReservation() {
   const location = useLocation();
   const prefill = location.state || {};
@@ -33,6 +56,8 @@ export default function FormulaireReservation() {
   });
   const [statut, setStatut] = useState({ type: null, message: '', alternatives: [], raisons: [] });
   const [ajoutAttenteFait, setAjoutAttenteFait] = useState(false);
+  const [creneauxDisponibles, setCreneauxDisponibles] = useState([]);
+  const [chargementCreneaux, setChargementCreneaux] = useState(false);
   const navigate = useNavigate();
   const notifier = useToast();
 
@@ -42,6 +67,21 @@ export default function FormulaireReservation() {
       if (data.length > 0 && !prefill.resourceId) setForm((f) => ({ ...f, resourceId: data[0].id }));
     });
   }, []);
+
+  useEffect(() => {
+    if (!form.resourceId || !form.date) return undefined;
+    let actif = true;
+    const debut = new Date(`${form.date}T00:00:00`);
+    const fin = new Date(`${form.date}T23:59:59`);
+    setChargementCreneaux(true);
+    api.getReservations({ resourceId: form.resourceId, depuis: debut.toISOString(), jusqua: fin.toISOString() })
+      .then((reservations) => {
+        if (actif) setCreneauxDisponibles(genererCreneaux(form.date, reservations));
+      })
+      .catch(() => { if (actif) setCreneauxDisponibles([]); })
+      .finally(() => { if (actif) setChargementCreneaux(false); });
+    return () => { actif = false; };
+  }, [form.resourceId, form.date]);
 
   const ressourceSelectionnee = useMemo(() => ressources.find((r) => r.id === Number(form.resourceId)), [ressources, form.resourceId]);
   
@@ -150,6 +190,27 @@ export default function FormulaireReservation() {
                   {ressourceSelectionnee.capacite > 0 && <p style={{ margin: '4px 0 0', color: 'var(--texte-secondaire)' }}>👥 Capacite: {ressourceSelectionnee.capacite} personnes</p>}
                 </div>
               )}
+              <div style={{ marginTop: 14 }}>
+                <label>Créneaux disponibles</label>
+                {chargementCreneaux && <p className="texte-discret">Recherche des créneaux libres...</p>}
+                {!chargementCreneaux && creneauxDisponibles.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {creneauxDisponibles.map((creneau) => (
+                      <button
+                        type="button"
+                        className="bouton-secondaire bouton-petit"
+                        key={creneau.heureDebut}
+                        onClick={() => setForm((f) => ({ ...f, heureDebut: creneau.heureDebut, heureFin: creneau.heureFin }))}
+                      >
+                        {creneau.heureDebut} - {creneau.heureFin}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {!chargementCreneaux && creneauxDisponibles.length === 0 && (
+                  <p className="texte-discret">Aucun créneau libre restant pour cette date.</p>
+                )}
+              </div>
             </div>
 
             {/* Section 2: Quand */}

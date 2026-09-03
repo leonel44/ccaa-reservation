@@ -77,6 +77,8 @@ export default function DashboardAdmin() {
 
   const maxReservJour = Math.max(1, ...(stats?.graphiques?.reservParJour || []).map((item) => item.nombreReservations));
   const maxHeuresService = Math.max(1, ...(stats?.graphiques?.occupationParService || []).map((item) => item.heures));
+  const ressourcesOccupees = new Set((stats?.presenceEquipe || []).map((membre) => `${membre.ressource}-${membre.localisation}`)).size;
+  const demandesEnAttente = (stats?.enAttenteValidation || 0) + (stats?.enAttenteResponsable || 0) + (stats?.enAttenteAdmin || 0);
 
   const ressourcesControle = useMemo(() => ressources.filter((ressource) => filtreRessource === 'Toutes' || String(ressource.id) === filtreRessource), [ressources, filtreRessource]);
   const joursControle = useMemo(() => Array.from({ length: 5 }, (_, index) => { const jour = new Date(semaineControle); jour.setDate(jour.getDate() + index); return jour; }), [semaineControle]);
@@ -131,6 +133,18 @@ export default function DashboardAdmin() {
 
       {!chargement && stats && (
         <div className="grille-stats">
+          <div className="carte-stat">
+            <p className="texte-discret">Ressources suivies</p>
+            <p className="valeur-stat">{ressources.length}</p>
+          </div>
+          <div className="carte-stat">
+            <p className="texte-discret">Occupées maintenant</p>
+            <p className="valeur-stat">{ressourcesOccupees}</p>
+          </div>
+          <div className="carte-stat">
+            <p className="texte-discret">Demandes à traiter</p>
+            <p className="valeur-stat valeur-attention">{demandesEnAttente}</p>
+          </div>
           <div className="carte-stat">
             <p className="texte-discret">Réservations ce mois</p>
             <p className="valeur-stat">{stats.reservationsCeMois}</p>
