@@ -8,8 +8,8 @@ import logo from '../assets/logo-ccaa.jpg';
 const VIDE = { nom: '', type: 'Salle', capacite: 0, localisation: '', photoUrl: '', planUrl: '', necessiteValidationAdmin: false, statutMaintenance: 'Disponible', maintenanceDebut: '', maintenanceFin: '' };
 const IMAGES_PAR_DEFAUT = {
   'Salle de conférence': '/images/salle-conference.avif',
-  'Salle de réunion A': '/images/salle-reunion-a.svg',
-  'Salle de réunion B': '/images/salle-reunion-b.svg',
+  'Salle de réunion A': '/images/salle-reunion-a.avif',
+  'Salle de réunion B': '/images/salle-reunion-b.avif',
 };
 function formulaireVide() { return { ...VIDE }; }
 

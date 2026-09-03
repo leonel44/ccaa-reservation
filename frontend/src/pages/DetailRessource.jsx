@@ -8,8 +8,8 @@ const STATUTS_ACTIFS = ['Validee', 'EnAttente', 'EnAttenteResponsable', 'EnAtten
 const ICONES_TYPE = { Salle: '🏛️', Equipement: '🎥', Vehicule: '🚗' };
 const IMAGES_PAR_DEFAUT = {
   'Salle de conférence': '/images/salle-conference.avif',
-  'Salle de réunion A': '/images/salle-reunion-a.svg',
-  'Salle de réunion B': '/images/salle-reunion-b.svg',
+  'Salle de réunion A': '/images/salle-reunion-a.avif',
+  'Salle de réunion B': '/images/salle-reunion-b.avif',
 };
 
 function formatDate(date) {
