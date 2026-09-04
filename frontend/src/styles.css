@@ -195,6 +195,25 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .login-page {
   position: relative;
   overflow: hidden;
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(235, 244, 255, 0.92), rgba(222, 236, 255, 0.82));
+  isolation: isolate;
+}
+
+.login-page .carte-connexion,
+.login-page .carte-formulaire,
+.login-page input,
+.login-page button,
+.login-page label,
+.login-page a {
+  box-sizing: border-box;
+  font-family: var(--font-ui), 'Segoe UI', sans-serif;
+}
+
+.login-page .login-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 430px);
 }
 
 .login-glow {
