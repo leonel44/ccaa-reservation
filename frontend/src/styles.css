@@ -321,13 +321,19 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  height: 32px;
   border: none;
   background: rgba(15, 76, 156, 0.08);
   color: var(--bleu-fonce);
   font-weight: 700;
   font-size: 12px;
-  padding: 7px 10px;
+  padding: 0 10px;
   border-radius: 8px;
+  line-height: 1;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -414,6 +420,60 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .login-inscription a:hover {
   color: var(--bleu-fonce);
+}
+
+@media (max-width: 768px) {
+  .login-page {
+    padding: 16px;
+  }
+
+  .login-card {
+    max-width: 100%;
+    padding: 24px 18px;
+  }
+
+  .connexion-entete h1 {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+  }
+
+  .logo-wrap {
+    width: 78px;
+    height: 78px;
+  }
+
+  .password-wrapper input {
+    padding-right: 82px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 12px;
+  }
+
+  .login-card {
+    padding: 22px 16px;
+    border-radius: 16px;
+  }
+
+  .login-badge {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  .password-wrapper input {
+    padding-right: 78px;
+  }
+
+  .password-toggle {
+    min-width: 64px;
+    font-size: 11px;
+    padding: 0 8px;
+  }
+
+  .login-button {
+    padding: 13px 16px;
+  }
 }
 
 @keyframes fadeInUp {
