@@ -1,5 +1,5 @@
-const CACHE_NAME = 'ccaa-cache-v2';
-const RUNTIME_CACHE = 'ccaa-runtime-v1';
+const CACHE_NAME = 'ccaa-cache-v3';
+const RUNTIME_CACHE = 'ccaa-runtime-v2';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
