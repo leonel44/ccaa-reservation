@@ -6,6 +6,7 @@ import { api } from '../api.js';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
+  const [montrerMotDePasse, setMontrerMotDePasse] = useState(false);
   const [erreur, setErreur] = useState('');
   const [chargement, setChargement] = useState(false);
   const navigate = useNavigate();
@@ -28,41 +29,69 @@ export default function Login() {
   }
 
   return (
-    <div className="page-centree">
-      <div className="carte-connexion">
+    <div className="page-centree login-page">
+      <div className="login-glow login-glow-1" />
+      <div className="login-glow login-glow-2" />
+
+      <div className="carte-connexion login-card">
         <div className="connexion-entete">
-          <img src={logo} alt="Logo CCAA" className="connexion-logo" />
+          <div className="logo-wrap">
+            <img src={logo} alt="Logo CCAA" className="connexion-logo" />
+          </div>
+          <span className="login-badge">Portail interne</span>
           <p className="texte-discret">Cameroon Civil Aviation Authority</p>
           <h1>Réservation de salles</h1>
         </div>
 
-        <form onSubmit={gererConnexion}>
-          <label>Email professionnel</label>
-          <input
-            type="email"
-            placeholder="prenom.nom@ccaa.cm ou prenom.nom@ccaa.aero"
-            title="Utilisez une adresse @ccaa.cm ou @ccaa.aero"
-            value={email}
-            onChange={(e) => setEmail(e.target.value.trim().toLowerCase())}
-            required
-          />
+        <form onSubmit={gererConnexion} className="login-form">
+          <div className="champ-formulaire">
+            <label htmlFor="email">Email professionnel</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="prenom.nom@ccaa.cm"
+              title="Utilisez une adresse @ccaa.cm ou @ccaa.aero"
+              value={email}
+              onChange={(e) => setEmail(e.target.value.trim().toLowerCase())}
+              required
+            />
+          </div>
 
-          <label>Mot de passe</label>
-          <input type="password" placeholder="••••••••" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} required />
+          <div className="champ-formulaire password-field">
+            <label htmlFor="motDePasse">Mot de passe</label>
+            <div className="password-wrapper">
+              <input
+                id="motDePasse"
+                type={montrerMotDePasse ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={motDePasse}
+                onChange={(e) => setMotDePasse(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setMontrerMotDePasse((valeur) => !valeur)}
+                aria-label={montrerMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                title={montrerMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+              >
+                {montrerMotDePasse ? 'Masquer' : 'Afficher'}
+              </button>
+            </div>
+          </div>
 
           {erreur && <p className="message-erreur">{erreur}</p>}
 
-          <button type="submit" className="bouton-primaire" style={{ width: '100%' }} disabled={chargement}>
-            {chargement ? 'Connexion...' : 'Se connecter'}
+          <button type="submit" className={`bouton-primaire login-button${chargement ? ' loading' : ''}`} disabled={chargement}>
+            <span className="button-content">
+              {chargement && <span className="button-spinner" aria-hidden="true" />}
+              <span>{chargement ? 'Connexion...' : 'Se connecter'}</span>
+            </span>
           </button>
         </form>
 
-        <p className="texte-centre" style={{ marginTop: 16, fontSize: 13.5 }}>
-          Pas encore de compte ? <Link to="/inscription" style={{ color: 'var(--bleu)', fontWeight: 500 }}>Créer un compte</Link>
-        </p>
-
-        <p className="texte-discret texte-centre" style={{ marginTop: 10 }}>
-          
+        <p className="texte-centre login-inscription">
+          Pas encore de compte ? <Link to="/inscription">Créer un compte</Link>
         </p>
       </div>
     </div>
