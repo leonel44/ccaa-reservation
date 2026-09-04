@@ -49,7 +49,7 @@ export default function Login() {
             <input
               id="email"
               type="email"
-              placeholder="prenom.nom@ccaa.cm"
+              placeholder=""
               title="Utilisez une adresse @ccaa.cm ou @ccaa.aero"
               value={email}
               onChange={(e) => setEmail(e.target.value.trim().toLowerCase())}
