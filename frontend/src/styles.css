@@ -310,9 +310,12 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .password-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .password-wrapper input {
+  width: 100%;
   padding-right: 90px;
 }
 
@@ -326,6 +329,7 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
   justify-content: center;
   min-width: 72px;
   height: 32px;
+  margin: 0;
   border: none;
   background: rgba(15, 76, 156, 0.08);
   color: var(--bleu-fonce);
@@ -334,6 +338,9 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
   padding: 0 10px;
   border-radius: 8px;
   line-height: 1;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
